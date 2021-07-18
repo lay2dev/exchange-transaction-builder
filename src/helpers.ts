@@ -7,18 +7,19 @@ import PWCore, {
   Builder,
   Cell,
   ChainID,
+  HashType,
   IndexerCollector,
   OutPoint,
   RawProvider,
   Reader,
   RPC,
+  Script,
 } from '@lay2/pw-core';
 import {exec} from 'child_process';
 import {readdir, readFileSync} from 'fs';
-import { CKB_DEV_URL, INDEXER_URL } from './config';
+import {ACCOUNT_PRIVATE_KEY, CKB_DEV_URL, INDEXER_DEV_URL} from './config';
 import {devChainConfig} from './deploy/deploy';
 import {ExchangeLockAddr} from './exchange-lock';
-
 
 export const enum ROOT_ADDRESS {
   testnet = 'ckt1qyqr9t744z3dah6udvfczvzflcyfrwur0qpsxdz3g9',
@@ -32,7 +33,7 @@ export const enum SCRIPT_PATH {
   secp256k1_blake2b_sighash_all_dual = './secp256k1_blake2b_sighash_all_dual',
 }
 
-export enum CKBEnv{
+export enum CKBEnv {
   testnet,
   mainnet,
   dev,
@@ -80,10 +81,9 @@ export function exportMoleculeTypes() {
 
 export async function transferAccount() {
   // init `RawProvider` with private key
-  const privateKey =
-    '0x7b075af14d5340073d469277d716c7dc8e43ff01bbb02d9e90af0aa2ed348397';
+  const privateKey = ACCOUNT_PRIVATE_KEY[0];
   const provider = new RawProvider(privateKey);
-  const collector = new IndexerCollector(INDEXER_URL);
+  const collector = new IndexerCollector(INDEXER_DEV_URL);
   const pwcore = await new PWCore(CKB_DEV_URL).init(
     provider,
     collector,
@@ -105,14 +105,8 @@ export async function transferAccount() {
     './script_builder/release/ckb_lock_demo',
     3,
     1,
-    '0x7b075af14d5340073d469277d716c7dc8e43ff01bbb02d9e90af0aa2ed348397',
-    [
-      '0x7b075af14d5340073d469277d716c7dc8e43ff01bbb02d9e90af0aa2ed348397',
-      '0x0a7042bf1cbe2555ddc91e5f20c71a8b514baf686c31d9dc4e817f9b0c8efa3d',
-      '0x4de816697189d9d4e57afe195c6a4dfc890f6f04ab76394e10e3930934797d02',
-      '0x14ab5b73e0a9044c36decf08e21d20c9a728e8fd334d46d62981a29e6f901179',
-      '0x1bc900157a06bb50aed257b6e87e2ec8ee024cd3dc0581eefa826a5b4f5a0c96',
-    ]
+    ACCOUNT_PRIVATE_KEY[0],
+    ACCOUNT_PRIVATE_KEY
   );
   const toAddr = exchangeLockAddr.address;
   console.log(toAddr);
@@ -125,9 +119,8 @@ export async function transferAccount() {
     new Amount('100000', AmountUnit.ckb),
     options
   );
-  console.log(txHash)
+  console.log(txHash);
 }
-
 
 export async function getCellDataHash(txHash: string, index: string) {
   const rpc = new RPC(CKB_DEV_URL);
@@ -141,5 +134,5 @@ export async function getCellDataHash(txHash: string, index: string) {
 
   console.log('cell.dataHash', dataHash);
   console.log('cell.typeHash', cell.type?.toHash());
-  console.log('cell.lockHahs',cell.lock.codeHash);
+  console.log('cell.lockHahs', cell.lock.codeHash);
 }

@@ -6,22 +6,29 @@ export const secp256k1_dep_cell = {
 };
 
 export const ckb_lock_demo = {
-  txHash: '0xf50472fab7d1c8c321de1fd86c121d88bb2a7883892f87f0508927568d484013',
+  txHash: '0x8fd47e4627961483836a554e46c54b891f10c8fbf05c78b914ee49fc289c833a',
   outputIndex: '0x0',
   typeHash:
-    '0xc275f2e4522a4b669b0f2892d1efdde275f0ec2035bd2104f78a0b80116a76c6',
+    '0x18e5f7aa6f195cca8054f1cb4c32a149d9f6eae21bfb6db71c7f63afcc0d2f74',
 };
 
 export const ckb_timelock = {
-  txHash: '0xc2b940a9b51f306e947dca1a76ae065c05e9dfd8cfdba96950514d88424f6393',
+  txHash: '0xe8f6580d8183a6a071e9a41879313a5fea495586f152e3b181f4830fd3f087b2',
   outputIndex: '0x0',
   typeHash:
-    '0x05e7342317bebee045b45808f1012fec22085680dac6560d1de05f8f68f7f031',
+    '0x317e61e3dafb230f53d4e416824549567d216498bc8e1b0922af9bf89a1186c2',
 };
 
 export const SYSTEM_TYPE_ID =
   '0x00000000000000000000000000000000000000000000000000545950455f4944';
 
+export const ACCOUNT_PRIVATE_KEY = [
+  '0x7b075af14d5340073d469277d716c7dc8e43ff01bbb02d9e90af0aa2ed348397',
+  '0x0a7042bf1cbe2555ddc91e5f20c71a8b514baf686c31d9dc4e817f9b0c8efa3d',
+  '0x4de816697189d9d4e57afe195c6a4dfc890f6f04ab76394e10e3930934797d02',
+  '0x14ab5b73e0a9044c36decf08e21d20c9a728e8fd334d46d62981a29e6f901179',
+  '0x1bc900157a06bb50aed257b6e87e2ec8ee024cd3dc0581eefa826a5b4f5a0c96',
+];
 
 export const CKB_DEV_URL = 'http://127.0.0.1:8114';
 export const INDEXER_DEV_URL = 'http://127.0.0.1:8116/indexer';

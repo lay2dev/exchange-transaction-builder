@@ -20,11 +20,8 @@ import PWCore, {
   DepType,
   OutPoint,
 } from '@lay2/pw-core';
-import {readFile} from 'fs/promises';
-import { INDEXER_DEV_URL } from '../config';
+import { ckb_lock_demo, ckb_timelock, INDEXER_DEV_URL, secp256k1_dep_cell } from '../config';
 import { devChainConfig } from '../deploy/deploy';
-import * as ExchangeLock from '../schemas-types/ckb-lock-demo-type';
-import * as TimeLock from '../schemas-types/ckb-timelock';
 
 export class TimeLockFromExchangeLockBuilder extends Builder {
   constructor(
@@ -43,7 +40,6 @@ export class TimeLockFromExchangeLockBuilder extends Builder {
     const outputCell = new Cell(this.amount, this.toAddr.toLockScript());
 
     const neededAmount = this.amount
-      .add(Builder.MIN_CHANGE)
       .add(Builder.MIN_CHANGE)
       .add(this.fee);
     let inputSum = new Amount('0');
@@ -82,22 +78,22 @@ export class TimeLockFromExchangeLockBuilder extends Builder {
           new CellDep(
             DepType.code,
             new OutPoint(
-              '0x3222781a4604885e40393c15b2f441abc946a90057973738853291722f1585ce',
-              '0x0'
+              ckb_lock_demo.txHash,
+              ckb_lock_demo.outputIndex,
             )
           ),
           new CellDep(
             DepType.code,
             new OutPoint(
-              '0xd9fbf9d9a26243bb8245e1c637cea854af1331a1836e072cac214a7fc053dd9b',
-              '0x0'
+              ckb_timelock.txHash,
+              ckb_timelock.outputIndex,
             )
           ),
           new CellDep(
             DepType.code,
             new OutPoint(
-              '0x65a0d1f5a318138e9a8763d4fb960e7b5f999ac9323f372edde788b8e92a3392',
-              '0x0'
+              secp256k1_dep_cell.txHash,
+              ckb_timelock.outputIndex,
             )
           ),
           devChainConfig.defaultLock.cellDep,

@@ -17,6 +17,7 @@ import * as TimeLock from '../schemas-types/ckb-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLockSigner} from './signer';
 import {ExchangeLockProvider} from './provider';
+import {ckb_lock_demo, ckb_timelock} from '../config';
 
 export class TimeLockFromExchangeLock {
   private readonly _rpc: RPC;
@@ -57,13 +58,12 @@ export class TimeLockFromExchangeLock {
       .hash(new Reader(this.singleKeyPair.publicKey))
       .toArrayBuffer()
       .slice(0, 20);
-    console.log("pubkey:",this.singleKeyPair.publicKey);
     blake.reset();
 
-    const exchangeLockCodeHash = "0x1c5e60fcd74d310e6314572dc6a411fcedad47c0c81657b2dc49b58219646767";
+    const exchangeLockCodeHash = ckb_lock_demo.typeHash;
 
-    const exchangeLockArgs = (new Blake2bHasher() as Hasher).update
-      (
+    const exchangeLockArgs = (new Blake2bHasher() as Hasher)
+      .update(
         new Reader(
           ExchangeLock.SerializeArgs({
             threshold: this.threshold,
@@ -72,33 +72,37 @@ export class TimeLockFromExchangeLock {
             single_pubkey: singlePubKeyHash,
           })
         ).toArrayBuffer()
-      ).digest()
+      )
+      .digest()
       .serializeJson()
       .slice(0, 42);
-      console.log("exchangelockargs:" , exchangeLockArgs);
 
     blake.reset();
 
-    console.log("args:" , new Reader(ExchangeLock.SerializeArgs({
-      threshold: this.threshold,
-      request_first_n: this.requestFirstN,
-      multi_pubkey: multiPubKeyHash,
-      single_pubkey: singlePubKeyHash,
-    })).serializeJson());
-    console.log("requestFirstN",this.requestFirstN);
-    console.log("exchangelockargs:" + exchangeLockArgs);
+    console.log(
+      'args:',
+      new Reader(
+        ExchangeLock.SerializeArgs({
+          threshold: this.threshold,
+          request_first_n: this.requestFirstN,
+          multi_pubkey: multiPubKeyHash,
+          single_pubkey: singlePubKeyHash,
+        })
+      ).serializeJson()
+    );
 
     let exchangeLockScript = new Script(
       exchangeLockCodeHash,
       exchangeLockArgs,
       HashType.type
     );
+    console.log("exchange lock script:",exchangeLockCodeHash);
     const exchangeLockScriptHash = new Reader(
       exchangeLockScript.toHash().slice(0, 42)
     );
     let fromAddr = Address.fromLockScript(exchangeLockScript);
 
-    const timeLockCodeHash = "0x05e7342317bebee045b45808f1012fec22085680dac6560d1de05f8f68f7f031";
+    const timeLockCodeHash = ckb_timelock.typeHash;
     blake.reset();
 
     let timeLockScript = new Script(
@@ -154,7 +158,7 @@ export class TimeLockFromExchangeLock {
       multiPrivateKey,
       threshold,
       requestFirstN,
-      false,
+      false
     );
     this.signer = new ExchangeLockSigner(provider);
   }
