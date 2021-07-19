@@ -13,7 +13,7 @@ import {ExchangeLockFromTimeLockBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-lock-demo';
 import {TimeLock, TimeLockArgs} from '../types/ckb-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {TimeLockSigner} from './signer';
+import {TimeLockSigner} from '../signer/time-lock-signer';
 // import {ExchangeLockProvider} from './provider';
 import {ckb_lock_demo, ckb_timelock} from '../config';
 
@@ -126,10 +126,7 @@ export class ExchangeLockFromTimeLock {
       fromAddr,
       singlePrivateKey,
       multiPrivateKey,
-      threshold,
-      requestFirstN,
-      false,
-      exchangeLockScriptHash,
+      timeLock,
       new Blake2bHasher()
     );
   }
