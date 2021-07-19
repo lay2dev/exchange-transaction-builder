@@ -1,4 +1,4 @@
-import PWCore, {
+import {
   Address,
   Amount,
   AmountUnit,
@@ -13,8 +13,13 @@ import PWCore, {
   DepType,
   OutPoint,
 } from '@lay2/pw-core';
-import { ckb_lock_demo, ckb_timelock, INDEXER_DEV_URL, secp256k1_dep_cell } from '../config';
-import { devChainConfig } from '../deploy/deploy';
+import {
+  ckb_lock_demo,
+  ckb_timelock,
+  INDEXER_DEV_URL,
+  secp256k1_dep_cell,
+} from '../config';
+import {devChainConfig} from '../deploy/deploy';
 
 export class ExchangeLockFromTimeLockBuilder extends Builder {
   constructor(
@@ -32,9 +37,7 @@ export class ExchangeLockFromTimeLockBuilder extends Builder {
   async build(): Promise<Transaction> {
     const outputCell = new Cell(this.amount, this.toAddr.toLockScript());
 
-    const neededAmount = this.amount
-      .add(Builder.MIN_CHANGE)
-      .add(this.fee);
+    const neededAmount = this.amount.add(Builder.MIN_CHANGE).add(this.fee);
     let inputSum = new Amount('0');
     const inputCells: Cell[] = [];
 
@@ -69,37 +72,27 @@ export class ExchangeLockFromTimeLockBuilder extends Builder {
       [
         new CellDep(
           DepType.code,
-          new OutPoint(
-            ckb_lock_demo.txHash,
-            ckb_lock_demo.outputIndex,
-          )
+          new OutPoint(ckb_lock_demo.txHash, ckb_lock_demo.outputIndex)
         ),
         new CellDep(
           DepType.code,
-          new OutPoint(
-            ckb_timelock.txHash,
-            ckb_timelock.outputIndex,
-          )
+          new OutPoint(ckb_timelock.txHash, ckb_timelock.outputIndex)
         ),
         new CellDep(
           DepType.code,
-          new OutPoint(
-            secp256k1_dep_cell.txHash,
-            ckb_timelock.outputIndex,
-          )
+          new OutPoint(secp256k1_dep_cell.txHash, ckb_timelock.outputIndex)
         ),
         devChainConfig.defaultLock.cellDep,
       ]
     );
-    for (let i in rawTx.inputs){
-      rawTx.inputs[i].since = "0x8000000000000064";
+    for (let i in rawTx.inputs) {
+      rawTx.inputs[i].since = '0x8000000000000064';
     }
-    const tx = new Transaction(
-      rawTx,
-      [this.witnessArgs]
-    );
+    const tx = new Transaction(rawTx, [this.witnessArgs]);
 
-    this.fee = Builder.calcFee(tx, this.feeRate).add(new Amount("1000",AmountUnit.shannon));
+    this.fee = Builder.calcFee(tx, this.feeRate).add(
+      new Amount('1000', AmountUnit.shannon)
+    );
 
     changeCell.capacity = changeCell.capacity.sub(this.fee);
     tx.raw.outputs.pop();

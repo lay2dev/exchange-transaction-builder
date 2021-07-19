@@ -8,7 +8,6 @@ import {
   Hasher,
   Blake2bHasher,
 } from '@lay2/pw-core';
-import {ExchangeLockProvider} from './provider';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import * as ExchangeLock from '../schemas-types/ckb-lock-demo-type';
 
