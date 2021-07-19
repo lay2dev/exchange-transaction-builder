@@ -21,7 +21,7 @@ import {
 } from '../config';
 import {devChainConfig} from '../deploy/deploy';
 
-export class TimeLockFromExchangeLockBuilder extends Builder {
+export class TimeLockSingleTxBuilder extends Builder {
   constructor(
     private fromAddr: Address,
     private toAddr: Address,

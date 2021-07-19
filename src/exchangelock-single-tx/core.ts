@@ -1,4 +1,4 @@
-import PWCore, {
+import {
   Address,
   Amount,
   Blake2bHasher,
@@ -9,18 +9,18 @@ import PWCore, {
   Script,
   transformers,
 } from '@lay2/pw-core';
-import {TimeLockFromExchangeLockBuilder} from './builder';
+import {ExchangeLockSingleTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-lock-demo';
 import {TimeLock, TimeLockArgs} from '../types/ckb-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
+import {TimeLockSigner} from '../signer/time-lock-signer';
 // import {ExchangeLockProvider} from './provider';
 import {ckb_lock_demo, ckb_timelock} from '../config';
 
-export class TimeLockFromExchangeLock {
-  private readonly _rpc: RPC;
-  private builder: TimeLockFromExchangeLockBuilder;
-  private signer: ExchangeLockSigner;
+export class ExchangeLockSingleTx {
+  private _rpc: RPC;
+  private builder: ExchangeLockSingleTxBuilder;
+  private signer: TimeLockSigner;
 
   constructor(
     fee: Amount = Amount.ZERO,
@@ -70,7 +70,8 @@ export class TimeLockFromExchangeLock {
     );
 
     const exchangeLockArgs = new Blake2bHasher()
-      .hash(exchangeLock.args.serialize())
+      .update(exchangeLock.args.serialize().toArrayBuffer())
+      .digest()
       .serializeJson()
       .slice(0, 42);
 
@@ -82,6 +83,7 @@ export class TimeLockFromExchangeLock {
     const exchangeLockScriptHash = new Reader(
       exchangeLockScript.toHash().slice(0, 42)
     );
+
     const timeLock = new TimeLock(
       0,
       new TimeLockArgs(
@@ -93,7 +95,7 @@ export class TimeLockFromExchangeLock {
       ),
       []
     );
-    let fromAddr = Address.fromLockScript(exchangeLockScript);
+    let toAddr = Address.fromLockScript(exchangeLockScript);
 
     let timeLockScript = new Script(
       ckb_timelock.typeHash,
@@ -103,14 +105,14 @@ export class TimeLockFromExchangeLock {
         .slice(0, 42),
       HashType.type
     );
-    const toAddr = Address.fromLockScript(timeLockScript);
+    const fromAddr = Address.fromLockScript(timeLockScript);
 
     const witnessArgs = {
-      lock: exchangeLock.serialize().serializeJson(),
+      lock: timeLock.serialize().serializeJson(),
       input_type: '',
       output_type: '',
     };
-    this.builder = new TimeLockFromExchangeLockBuilder(
+    this.builder = new ExchangeLockSingleTxBuilder(
       fromAddr,
       toAddr,
       fee,
@@ -120,11 +122,11 @@ export class TimeLockFromExchangeLock {
       collector
     );
 
-    this.signer = new ExchangeLockSigner(
+    this.signer = new TimeLockSigner(
       fromAddr,
       singlePrivateKey,
       multiPrivateKey,
-      exchangeLock,
+      timeLock,
       new Blake2bHasher()
     );
   }
