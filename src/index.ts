@@ -93,8 +93,6 @@ program
       case 'TimeLockFromExchangeLock':
         const txHash = await new TimeLockFromExchangeLock(
           undefined,
-          './script_builder/release/ckb_timelock',
-          './script_builder/release/ckb_lock_demo',
           new Amount('1000'),
           3,
           1,

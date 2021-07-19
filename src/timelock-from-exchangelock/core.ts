@@ -28,8 +28,6 @@ export class TimeLockFromExchangeLock {
 
   constructor(
     protected fee: Amount = Amount.ZERO,
-    private timelockScriptCodePath: string,
-    private exchangeLockScriptCodePath: string,
     private amount: Amount,
     private threshold: number,
     private requestFirstN: number,
