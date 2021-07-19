@@ -5,8 +5,8 @@ import {
   ROOT_PRIVATE_KEY,
   transferAccount,
 } from './helpers';
-import {TimeLockFromExchangeLock} from './timelock-from-exchangelock/core';
-import {ExchangeLockFromTimeLock} from './exchangelock-from-timelock/core';
+import {TimeLockSingleTx} from './timelock-single-tx/core';
+import { ExchangeLockSingleTx } from './exchangelock-single-tx/core';
 import * as ExchangeLock from './schemas-types/ckb-lock-demo-type';
 
 // transferAccount()
@@ -88,12 +88,12 @@ program
 
 program
   .command('deploy_tx <txType>')
-  .description('deploy transaction One of `TimeLockFromExchangeLock`')
+  .description('deploy transaction One of `TimeLockSingleTx`,`ExchangeLockSingleTx`')
   .action(async (txType) => {
     let txHash;
     switch (txType) {
-      case 'TimeLockFromExchangeLock':
-        txHash = await new TimeLockFromExchangeLock(
+      case 'TimeLockSingleTx':
+        txHash = await new TimeLockSingleTx(
           undefined,
           new Amount('1000'),
           3,
@@ -104,8 +104,8 @@ program
         ).send();
         console.log("txHash:",txHash);
         break;
-      case 'ExchangeLockFromTimeLock':
-        txHash = await new ExchangeLockFromTimeLock(
+      case 'ExchangeLockSingleTx':
+        txHash = await new ExchangeLockSingleTx(
           undefined,new Amount('1000'),3,1,ACCOUNT_PRIVATE_KEY[0],
           ACCOUNT_PRIVATE_KEY,
           CKB_DEV_URL
