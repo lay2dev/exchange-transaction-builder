@@ -6,6 +6,7 @@ import {
   transferAccount,
 } from './helpers';
 import {TimeLockFromExchangeLock} from './timelock-from-exchangelock/core';
+import {ExchangeLockFromTimeLock} from './exchangelock-from-timelock/core';
 import * as ExchangeLock from './schemas-types/ckb-lock-demo-type';
 
 // transferAccount()
@@ -89,9 +90,10 @@ program
   .command('deploy_tx <txType>')
   .description('deploy transaction One of `TimeLockFromExchangeLock`')
   .action(async (txType) => {
+    let txHash;
     switch (txType) {
       case 'TimeLockFromExchangeLock':
-        const txHash = await new TimeLockFromExchangeLock(
+        txHash = await new TimeLockFromExchangeLock(
           undefined,
           new Amount('1000'),
           3,
@@ -102,7 +104,14 @@ program
         ).send();
         console.log("txHash:",txHash);
         break;
-
+      case 'ExchangeLockFromTimeLock':
+        txHash = await new ExchangeLockFromTimeLock(
+          undefined,new Amount('1000'),3,1,ACCOUNT_PRIVATE_KEY[0],
+          ACCOUNT_PRIVATE_KEY,
+          CKB_DEV_URL
+        ).send();
+        console.log("txHash:",txHash);
+        break;
       default:
         console.log("invalid txType");
         break;

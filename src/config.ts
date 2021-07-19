@@ -6,14 +6,14 @@ export const secp256k1_dep_cell = {
 };
 
 export const ckb_lock_demo = {
-  txHash: '0x8fd47e4627961483836a554e46c54b891f10c8fbf05c78b914ee49fc289c833a',
+  txHash: '0xdb4f9913cd743aa75f409fbfbffa84343afe7e420c1188c351a8c96ad045820f',
   outputIndex: '0x0',
   typeHash:
     '0x18e5f7aa6f195cca8054f1cb4c32a149d9f6eae21bfb6db71c7f63afcc0d2f74',
 };
 
 export const ckb_timelock = {
-  txHash: '0xe8f6580d8183a6a071e9a41879313a5fea495586f152e3b181f4830fd3f087b2',
+  txHash: '0x8c067d93a0775438f135faceca0b3127df8a2ca90797debbbe400be7d3f7bfd6',
   outputIndex: '0x0',
   typeHash:
     '0x317e61e3dafb230f53d4e416824549567d216498bc8e1b0922af9bf89a1186c2',
