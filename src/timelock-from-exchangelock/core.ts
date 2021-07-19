@@ -16,7 +16,7 @@ import * as ExchangeLock from '../schemas-types/ckb-lock-demo-type';
 import * as TimeLock from '../schemas-types/ckb-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLockSigner} from './signer';
-import {ExchangeLockProvider} from './provider';
+// import {ExchangeLockProvider} from './provider';
 import {ckb_lock_demo, ckb_timelock} from '../config';
 
 export class TimeLockFromExchangeLock {
@@ -77,24 +77,11 @@ export class TimeLockFromExchangeLock {
 
     blake.reset();
 
-    console.log(
-      'args:',
-      new Reader(
-        ExchangeLock.SerializeArgs({
-          threshold: this.threshold,
-          request_first_n: this.requestFirstN,
-          multi_pubkey: multiPubKeyHash,
-          single_pubkey: singlePubKeyHash,
-        })
-      ).serializeJson()
-    );
-
     let exchangeLockScript = new Script(
       exchangeLockCodeHash,
       exchangeLockArgs,
       HashType.type
     );
-    console.log("exchange lock script:",exchangeLockCodeHash);
     const exchangeLockScriptHash = new Reader(
       exchangeLockScript.toHash().slice(0, 42)
     );
@@ -150,15 +137,15 @@ export class TimeLockFromExchangeLock {
       this.collector
     );
 
-    const provider = new ExchangeLockProvider(
+    this.signer = new ExchangeLockSigner(
       fromAddr,
       singlePrivateKey,
       multiPrivateKey,
       threshold,
       requestFirstN,
-      false
+      false,
+      new Blake2bHasher()
     );
-    this.signer = new ExchangeLockSigner(provider);
   }
 
   async send(): Promise<string> {
@@ -169,7 +156,6 @@ export class TimeLockFromExchangeLock {
     console.log(JSON.stringify(sign_tx, null, 2));
 
     let transform = transformers.TransformTransaction(sign_tx);
-    // console.log(JSON.stringify(transform, null, 2));
     let txHash = this._rpc.send_transaction(transform);
     return txHash;
   }
