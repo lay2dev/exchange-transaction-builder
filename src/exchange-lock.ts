@@ -1,6 +1,5 @@
 import {Address, Blake2bHasher, HashType, Reader, Script} from '@lay2/pw-core';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import { readFileSync } from 'fs';
 import { ckb_lock_demo } from './config';
 import * as ExchangeLock from './schemas-types/ckb-lock-demo-type';
 
@@ -9,7 +8,6 @@ export class ExchangeLockAddr {
   private multiKeyPair: Array<ECPair>;
   address:Address;
   constructor(
-    private exchangeLockScriptCodePath: string,
     private threshold: number,
     private requestFirstN: number,
     singlePrivateKey: string,

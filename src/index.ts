@@ -1,11 +1,8 @@
 import {Amount, Blake2bHasher, ChainID, Reader, RPC} from '@lay2/pw-core';
 import Deploy, {devChainConfig} from './deploy/deploy';
 import {
-  exportMoleculeTypes,
   getCellDataHash,
-  ROOT_ADDRESS,
   ROOT_PRIVATE_KEY,
-  SCRIPT_PATH,
   transferAccount,
 } from './helpers';
 import {TimeLockFromExchangeLock} from './timelock-from-exchangelock/core';

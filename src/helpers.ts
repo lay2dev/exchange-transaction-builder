@@ -102,7 +102,6 @@ export async function transferAccount() {
   const options = {witnessArgs: Builder.WITNESS_ARGS.RawSecp256k1};
   // transfer
   const exchangeLockAddr = new ExchangeLockAddr(
-    './script_builder/release/ckb_lock_demo',
     3,
     1,
     ACCOUNT_PRIVATE_KEY[0],
