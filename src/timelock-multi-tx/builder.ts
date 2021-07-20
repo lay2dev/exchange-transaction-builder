@@ -21,7 +21,7 @@ import {
 } from '../config';
 import {devChainConfig} from '../deploy/deploy';
 
-export class TimeLockSingleTxBuilder extends Builder {
+export class TimeLockMultiTxBuilder extends Builder {
   constructor(
     private fromAddr: Address,
     private toAddr: Address,
@@ -66,28 +66,27 @@ export class TimeLockSingleTxBuilder extends Builder {
       this.fromAddr.toLockScript()
     );
 
-    const tx = new Transaction(
-      new RawTransaction(
-        inputCells,
-        [outputCell, changeCell],
-        [
-          new CellDep(
-            DepType.code,
-            new OutPoint(ckb_lock_demo.txHash, ckb_lock_demo.outputIndex)
-          ),
-          new CellDep(
-            DepType.code,
-            new OutPoint(ckb_timelock.txHash, ckb_timelock.outputIndex)
-          ),
-          new CellDep(
-            DepType.code,
-            new OutPoint(secp256k1_dep_cell.txHash, ckb_timelock.outputIndex)
-          ),
-          devChainConfig.defaultLock.cellDep,
-        ]
-      ),
-      [this.witnessArgs]
+    let rawTx = new RawTransaction(
+      inputCells,
+      [outputCell, changeCell],
+      [
+        new CellDep(
+          DepType.code,
+          new OutPoint(ckb_lock_demo.txHash, ckb_lock_demo.outputIndex)
+        ),
+        new CellDep(
+          DepType.code,
+          new OutPoint(ckb_timelock.txHash, ckb_timelock.outputIndex)
+        ),
+        new CellDep(
+          DepType.code,
+          new OutPoint(secp256k1_dep_cell.txHash, ckb_timelock.outputIndex)
+        ),
+        devChainConfig.defaultLock.cellDep,
+      ]
     );
+
+    const tx = new Transaction(rawTx, [this.witnessArgs]);
 
     this.fee = Builder.calcFee(tx, this.feeRate).add(
       new Amount('1000', AmountUnit.shannon)

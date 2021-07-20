@@ -1,7 +1,7 @@
 import {Address, Blake2bHasher, HashType, Reader, Script} from '@lay2/pw-core';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import { ckb_lock_demo } from './config';
-import * as ExchangeLock from './schemas-types/ckb-lock-demo-type';
+import * as ExchangeLock from './schemas-types/ckb-exchange-lock-type';
 
 export class ExchangeLockAddr {
   private singleKeyPair: ECPair;

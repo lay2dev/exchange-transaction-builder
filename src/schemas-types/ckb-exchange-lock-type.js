@@ -152,10 +152,7 @@ export class Lock {
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
     new Args(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
-    if (offsets[2] - offsets[1] !== 1) {
-      throw new Error(`Invalid offset for sign_flag: ${offsets[1]} - ${offsets[2]}`)
-    }
-    new SignatureVec(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
+    new SignatureVec(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
   }
 
   getArgs() {
@@ -165,15 +162,8 @@ export class Lock {
     return new Args(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getSignFlag() {
-    const start = 8;
-    const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.getUint32(start + 4, true);
-    return new DataView(this.view.buffer.slice(offset, offset_end)).getUint8(0);
-  }
-
   getSignature() {
-    const start = 12;
+    const start = 8;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.byteLength;
     return new SignatureVec(this.view.buffer.slice(offset, offset_end), { validate: false });
@@ -183,9 +173,6 @@ export class Lock {
 export function SerializeLock(value) {
   const buffers = [];
   buffers.push(SerializeArgs(value.args));
-  const signFlagView = new DataView(new ArrayBuffer(1));
-  signFlagView.setUint8(0, value.sign_flag);
-  buffers.push(signFlagView.buffer)
   buffers.push(SerializeSignatureVec(value.signature));
   return serializeTable(buffers);
 }

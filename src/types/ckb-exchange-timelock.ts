@@ -1,25 +1,23 @@
 import {Reader} from '@lay2/pw-core';
-import {
-  SerializeArgs,
-  SerializeLock,
-} from '../schemas-types/ckb-lock-demo-type';
+import {SerializeArgs, SerializeLock} from '../schemas-types/ckb-exchange-timelock-type';
 
-export class ExchangeLockArgs {
+export class TimeLockArgs {
   constructor(
     public threshold: number,
     public request_first_n: number,
+    public multi_pubkey: Array<Reader>,
     public single_pubkey: Reader,
-    public multi_pubkey: Array<Reader>
+    public output_hash: Reader
   ) {}
   serialize() {
     return new Reader(SerializeArgs(this));
   }
 }
 
-export class ExchangeLock {
+export class TimeLock {
   constructor(
-    public args: ExchangeLockArgs,
     public sign_flag: number,
+    public args: TimeLockArgs,
     public signature: Array<Reader>
   ) {}
   serialize() {

@@ -7,7 +7,7 @@ import {
   Hasher,
 } from '@lay2/pw-core';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {ExchangeLock} from '../types/ckb-lock-demo';
+import {ExchangeLock} from '../types/ckb-exchange-lock';
 
 export class ExchangeLockSigner extends Signer {
   private singleKeyPair: ECPair;

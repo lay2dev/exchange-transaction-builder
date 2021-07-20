@@ -1,0 +1,81 @@
+{
+  "namespace": "ckb_exchange_lock_type",
+  "imports": [
+    {
+      "name": "common_type",
+      "paths": [],
+      "path_supers": 0
+    }
+  ],
+  "declarations": [
+    {
+      "type": "table",
+      "name": "Args",
+      "fields": [
+        {
+          "name": "threshold",
+          "type": "byte"
+        },
+        {
+          "name": "request_first_n",
+          "type": "byte"
+        },
+        {
+          "name": "single_pubkey",
+          "type": "PubKeyHash"
+        },
+        {
+          "name": "multi_pubkey",
+          "type": "PubKeyHashVec"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "name": "Lock",
+      "fields": [
+        {
+          "name": "args",
+          "type": "Args"
+        },
+        {
+          "name": "signature",
+          "type": "SignatureVec"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "name": "PubKeyHash",
+      "item": "byte",
+      "item_count": 20,
+      "imported_depth": 1
+    },
+    {
+      "type": "fixvec",
+      "name": "PubKeyHashVec",
+      "item": "PubKeyHash",
+      "imported_depth": 1
+    },
+    {
+      "type": "array",
+      "name": "Signature",
+      "item": "byte",
+      "item_count": 65,
+      "imported_depth": 1
+    },
+    {
+      "type": "fixvec",
+      "name": "SignatureVec",
+      "item": "Signature",
+      "imported_depth": 1
+    },
+    {
+      "type": "array",
+      "name": "LockHash",
+      "item": "byte",
+      "item_count": 20,
+      "imported_depth": 1
+    }
+  ]
+}

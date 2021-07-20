@@ -10,17 +10,17 @@ import {
   transformers,
 } from '@lay2/pw-core';
 import {ExchangeLockSingleTxBuilder} from './builder';
-import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-lock-demo';
-import {TimeLock, TimeLockArgs} from '../types/ckb-timelock';
+import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
+import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {TimeLockSigner} from '../signer/time-lock-signer';
+import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
 // import {ExchangeLockProvider} from './provider';
 import {ckb_lock_demo, ckb_timelock} from '../config';
 
 export class ExchangeLockSingleTx {
-  private _rpc: RPC;
+  private readonly _rpc: RPC;
   private builder: ExchangeLockSingleTxBuilder;
-  private signer: TimeLockSigner;
+  private signer: ExchangeLockSigner;
 
   constructor(
     fee: Amount = Amount.ZERO,
@@ -70,8 +70,7 @@ export class ExchangeLockSingleTx {
     );
 
     const exchangeLockArgs = new Blake2bHasher()
-      .update(exchangeLock.args.serialize().toArrayBuffer())
-      .digest()
+      .hash(exchangeLock.args.serialize())
       .serializeJson()
       .slice(0, 42);
 
@@ -83,7 +82,6 @@ export class ExchangeLockSingleTx {
     const exchangeLockScriptHash = new Reader(
       exchangeLockScript.toHash().slice(0, 42)
     );
-
     const timeLock = new TimeLock(
       0,
       new TimeLockArgs(
@@ -95,7 +93,7 @@ export class ExchangeLockSingleTx {
       ),
       []
     );
-    let toAddr = Address.fromLockScript(exchangeLockScript);
+    let fromAddr = Address.fromLockScript(exchangeLockScript);
 
     let timeLockScript = new Script(
       ckb_timelock.typeHash,
@@ -105,10 +103,10 @@ export class ExchangeLockSingleTx {
         .slice(0, 42),
       HashType.type
     );
-    const fromAddr = Address.fromLockScript(timeLockScript);
+    const toAddr = Address.fromLockScript(timeLockScript);
 
     const witnessArgs = {
-      lock: timeLock.serialize().serializeJson(),
+      lock: exchangeLock.serialize().serializeJson(),
       input_type: '',
       output_type: '',
     };
@@ -122,11 +120,11 @@ export class ExchangeLockSingleTx {
       collector
     );
 
-    this.signer = new TimeLockSigner(
+    this.signer = new ExchangeLockSigner(
       fromAddr,
       singlePrivateKey,
       multiPrivateKey,
-      timeLock,
+      exchangeLock,
       new Blake2bHasher()
     );
   }

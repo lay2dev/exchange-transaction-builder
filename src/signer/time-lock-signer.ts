@@ -7,7 +7,7 @@ import {
   Hasher,
 } from '@lay2/pw-core';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {TimeLock} from '../types/ckb-timelock';
+import {TimeLock} from '../types/ckb-exchange-timelock';
 
 export class TimeLockSigner extends Signer {
   private singleKeyPair: ECPair;

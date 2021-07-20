@@ -1,34 +1,19 @@
 import {Amount, Blake2bHasher, ChainID, Reader, RPC} from '@lay2/pw-core';
 import Deploy, {devChainConfig} from './deploy/deploy';
 import {
+  exportMoleculeTypes,
   getCellDataHash,
   ROOT_PRIVATE_KEY,
   transferAccount,
 } from './helpers';
-import {TimeLockSingleTx} from './timelock-single-tx/core';
-import { ExchangeLockSingleTx } from './exchangelock-single-tx/core';
-import * as ExchangeLock from './schemas-types/ckb-lock-demo-type';
-
-// transferAccount()
-//   .then(() => process.exit(0))
-//   .catch(error => {
-//     console.error(error);
-//     process.exit(1);
-//   });
-
-// update scemas types for molecule
-// exportMoleculeTypes();
-// main()
-//   .then(() => process.exit(0))
-//   .catch(error => {
-//     console.error(error);
-//     process.exit(1);
-//   });
-
+import {ExchangeLockSingleTx} from './exchangelock-single-tx/core';
+import {TimeLockSingleTx} from './time-lock-single-tx/core';
 
 import {Command} from 'commander';
 import {readFileSync} from 'fs';
 import {ACCOUNT_PRIVATE_KEY, CKB_DEV_URL} from './config';
+import {ExchangeLockMultiTx} from './exchangelock-multi-tx/core';
+import {TimeLockMultiTx} from './timelock-multi-tx/core';
 const program = new Command();
 program.version('0.0.1');
 
@@ -79,7 +64,7 @@ program
     console.log('blake2b Hash Result:', output.serializeJson());
   });
 
-  program
+program
   .command('transfer_account')
   .description('transfer ckb account')
   .action(async () => {
@@ -87,9 +72,18 @@ program
   });
 
 program
+  .command('moleculeTypeUpdate')
+  .description('update molecule type')
+  .action(async () => {
+    await exportMoleculeTypes();
+  });
+
+program
   .command('deploy_tx <txType>')
-  .description('deploy transaction One of `TimeLockSingleTx`,`ExchangeLockSingleTx`')
-  .action(async (txType) => {
+  .description(
+    'deploy transaction One of `TimeLockSingleTx`,`ExchangeLockSingleTx`'
+  )
+  .action(async txType => {
     let txHash;
     switch (txType) {
       case 'TimeLockSingleTx':
@@ -102,18 +96,46 @@ program
           ACCOUNT_PRIVATE_KEY,
           CKB_DEV_URL
         ).send();
-        console.log("txHash:",txHash);
+        console.log('txHash:', txHash);
         break;
-      case 'ExchangeLockSingleTx':
-        txHash = await new ExchangeLockSingleTx(
-          undefined,new Amount('1000'),3,1,ACCOUNT_PRIVATE_KEY[0],
+      case 'TimeLockMultiTx':
+        txHash = await new TimeLockMultiTx(
+          undefined,
+          new Amount('1000'),
+          3,
+          1,
+          ACCOUNT_PRIVATE_KEY[0],
           ACCOUNT_PRIVATE_KEY,
           CKB_DEV_URL
         ).send();
-        console.log("txHash:",txHash);
+        console.log('txHash:', txHash);
+        break;
+      case 'ExchangeLockSingleTx':
+        txHash = await new ExchangeLockSingleTx(
+          undefined,
+          new Amount('1000'),
+          3,
+          1,
+          ACCOUNT_PRIVATE_KEY[0],
+          ACCOUNT_PRIVATE_KEY,
+          CKB_DEV_URL
+        ).send();
+        console.log('txHash:', txHash);
+        break;
+      case 'ExchangeLockMultiTx':
+        txHash = await new ExchangeLockMultiTx(
+          undefined,
+          new Amount('1000'),
+          3,
+          1,
+          ACCOUNT_PRIVATE_KEY[0],
+          ACCOUNT_PRIVATE_KEY,
+          CKB_DEV_URL
+        ).send();
+        console.log('txHash:', txHash);
         break;
       default:
-        console.log("invalid txType");
+        console.log('invalid txType');
         break;
     }
   });
