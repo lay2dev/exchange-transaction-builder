@@ -52,8 +52,19 @@ export const TESTNET_CONFIG = {
     typeHash:
       '0xac6cbc6289beac9c33da093807e9c8851c6d9bf82c00ee8010208cbee8df5235',
   },
+  nft_type:{
+    txHash:"0xbd262c87a84c08ea3bc141700cf55c1a285009de0e22c247a8d9597b4fc491e6",
+    outputIndex:"0x2",
+    typeHash:"0xb1837b5ad01a88558731953062d1f5cb547adf89ece01e8934a9f0aeed2d959f",
+  }
 };
 
+export const NFTTypeScript = {
+  code_hash:"0xb1837b5ad01a88558731953062d1f5cb547adf89ece01e8934a9f0aeed2d959f",
+  args:"0xcbdd0b6b31c77f63b51f776f1a58a8924ae6fa7c000000100000001b",
+  hash_type:"type",
+  txHash:"0xbd262c87a84c08ea3bc141700cf55c1a285009de0e22c247a8d9597b4fc491e6"
+};
 
 export const SYSTEM_TYPE_ID =
   '0x00000000000000000000000000000000000000000000000000545950455f4944';

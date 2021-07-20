@@ -13,15 +13,28 @@ import PWCore, {
   IndexerCollector,
   OutPoint,
   RawProvider,
+  RawTransaction,
   Reader,
   RPC,
   Script,
+  Transaction,
+  transformers,
 } from '@lay2/pw-core';
 import {exec} from 'child_process';
 import {readdir, readFileSync} from 'fs';
-import {ACCOUNT_PRIVATE_KEY, DEV_CONFIG, TESTNET_CONFIG} from './config';
+import {
+  ACCOUNT_PRIVATE_KEY,
+  DEV_CONFIG,
+  ROOT_PRIVATE_KEY,
+  TESTNET_CONFIG,
+} from './config';
 import {devChainConfig} from './deploy/deploy';
 import {ExchangeLockAddr} from './exchange-lock';
+import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
+import {ExchangeLock, ExchangeLockArgs} from './types/ckb-exchange-lock';
+import {TimeLock, TimeLockArgs} from './types/ckb-exchange-timelock';
+import {ExchangeLockSigner} from './signer/exchange-lock-signer';
+import {DefaultSigner} from './signer/default-signer';
 
 export const enum ROOT_ADDRESS {
   testnet = 'ckt1qyqr9t744z3dah6udvfczvzflcyfrwur0qpsxdz3g9',
@@ -122,6 +135,101 @@ export async function transferAccount() {
   console.log(txHash);
 }
 
+export async function transferAccountForNFT(
+  fromOutPoint: OutPoint,
+  threshold: number,
+  requestFirstN: number,
+  singlePrivateKey: string,
+  multiPrivateKey: Array<string>,
+  env: CKBEnv = CKBEnv.testnet
+) {
+  const nodeUrl =
+    env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+  const rpc = new RPC(nodeUrl);
+
+  let multiKeyPair = [];
+  let multiPubKeyHash = [];
+  for (let privateKey of multiPrivateKey) {
+    let keyPair = new ECPair(privateKey);
+    multiKeyPair.push(keyPair);
+    multiPubKeyHash.push(
+      new Reader(
+        new Blake2bHasher()
+          .hash(new Reader(keyPair.publicKey))
+          .toArrayBuffer()
+          .slice(0, 20)
+      )
+    );
+  }
+
+  const singleKeyPair = new ECPair(singlePrivateKey);
+  const singlePubKeyHash = new Reader(
+    new Blake2bHasher()
+      .hash(new Reader(singleKeyPair.publicKey))
+      .toArrayBuffer()
+      .slice(0, 20)
+  );
+
+  const exchangeLock = new ExchangeLock(
+    new ExchangeLockArgs(
+      threshold,
+      requestFirstN,
+      singlePubKeyHash,
+      multiPubKeyHash
+    ),
+    0,
+    []
+  );
+
+  const exchangeLockArgs = new Blake2bHasher()
+    .hash(exchangeLock.args.serialize())
+    .serializeJson()
+    .slice(0, 42);
+
+  let exchangeLockScript = new Script(
+    DEV_CONFIG.ckb_exchange_lock.typeHash,
+    exchangeLockArgs,
+    HashType.type
+  );
+
+  const inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
+  let outputCell = inputCell.clone();
+  outputCell.lock = exchangeLockScript;
+  const signer = new DefaultSigner(
+    new Blake2bHasher(),
+    ROOT_PRIVATE_KEY,
+    inputCell.lock.toHash()
+  );
+
+  const witnessArgs = {
+    lock: new Reader('0x' + '0'.repeat(130)).serializeJson(),
+    input_type: '',
+    output_type: '',
+  };
+
+  const tx = new Transaction(
+    new RawTransaction(
+      [inputCell],
+      [outputCell],
+      [
+        getCellDep(env, CellDepType.secp256k1_dep_cell),
+        getCellDep(env, CellDepType.secp256k1_lib_dep_cell),
+        getCellDep(env, CellDepType.nft_type),
+      ]
+    ),
+    [witnessArgs]
+  );
+
+  const fee = Builder.calcFee(tx, Builder.MIN_FEE_RATE);
+  tx.raw.outputs[0].capacity = tx.raw.outputs[0].capacity.sub(fee);
+  let sign_tx = await signer.sign(tx);
+  console.log(JSON.stringify(sign_tx, null, 2));
+
+  let transform = transformers.TransformTransaction(sign_tx);
+  let txHash = await rpc.send_transaction(transform);
+  console.log("txHash:",txHash);
+}
+
 export async function getCellDataHash(
   txHash: string,
   index: string,
@@ -148,6 +256,7 @@ export enum CellDepType {
   secp256k1_lib_dep_cell,
   ckb_exchange_lock,
   ckb_exchange_timelock,
+  nft_type,
 }
 export function getCellDep(env: CKBEnv, type: CellDepType): CellDep {
   switch (env) {
@@ -222,6 +331,14 @@ export function getCellDep(env: CKBEnv, type: CellDepType): CellDep {
               TESTNET_CONFIG.ckb_exchange_timelock.outputIndex
             )
           );
+        case CellDepType.nft_type:
+          return new CellDep(
+            DepType.code,
+            new OutPoint(
+              TESTNET_CONFIG.nft_type.txHash,
+              TESTNET_CONFIG.nft_type.outputIndex,
+            )
+          )
         default:
           throw new Error('invalid cell dep type');
       }

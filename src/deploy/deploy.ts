@@ -127,7 +127,7 @@ export default class Deploy {
     const indexUrl =  this.ckbEnv === CKBEnv.dev ? DEV_CONFIG.indexer_url : TESTNET_CONFIG.indexer_url;
     this.collector = new IndexerCollector(indexUrl);
     this.rpc = new RPC(nodeUrl);
-    this.signer = new DefaultSigner(new Blake2bHasher(),privateKey,this.fromAddr);
+    this.signer = new DefaultSigner(new Blake2bHasher(),privateKey,this.fromAddr.toLockScript().toHash());
   }
 
   async init(
