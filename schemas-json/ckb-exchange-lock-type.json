@@ -39,6 +39,10 @@
           "type": "Args"
         },
         {
+          "name": "sign_flag",
+          "type": "byte"
+        },
+        {
           "name": "signature",
           "type": "SignatureVec"
         }

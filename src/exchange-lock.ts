@@ -1,6 +1,6 @@
 import {Address, Blake2bHasher, HashType, Reader, Script} from '@lay2/pw-core';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import { ckb_lock_demo } from './config';
+import { CKB_EXCHANGE_LOCK } from './config';
 import * as ExchangeLock from './schemas-types/ckb-exchange-lock-type';
 
 export class ExchangeLockAddr {
@@ -29,7 +29,7 @@ export class ExchangeLockAddr {
     const singlePubKeyHash = blake.hash(new Reader(this.singleKeyPair.publicKey)).toArrayBuffer().slice(0,20);
     blake.reset();
 
-    const exchangeLockCodeHash = ckb_lock_demo.typeHash;
+    const exchangeLockCodeHash = CKB_EXCHANGE_LOCK.typeHash;
 
     const exchangeLockArgs = blake.hash(new Reader(ExchangeLock.SerializeArgs({
       threshold: this.threshold,

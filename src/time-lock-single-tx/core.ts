@@ -15,7 +15,7 @@ import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockSigner} from '../signer/time-lock-signer';
 // import {ExchangeLockProvider} from './provider';
-import {ckb_lock_demo, ckb_timelock} from '../config';
+import {CKB_EXCHANGE_LOCK, CKB_EXCHANGE_TIMELOCK} from '../config';
 
 export class TimeLockSingleTx {
   private _rpc: RPC;
@@ -76,7 +76,7 @@ export class TimeLockSingleTx {
       .slice(0, 42);
 
     let exchangeLockScript = new Script(
-      ckb_lock_demo.typeHash,
+      CKB_EXCHANGE_LOCK.typeHash,
       exchangeLockArgs,
       HashType.type
     );
@@ -98,7 +98,7 @@ export class TimeLockSingleTx {
     let toAddr = Address.fromLockScript(exchangeLockScript);
 
     let timeLockScript = new Script(
-      ckb_timelock.typeHash,
+      CKB_EXCHANGE_TIMELOCK.typeHash,
       new Blake2bHasher()
         .hash(timeLock.args.serialize())
         .serializeJson()

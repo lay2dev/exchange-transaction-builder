@@ -11,11 +11,9 @@ import {
 } from '@lay2/pw-core';
 import {ExchangeLockMultiTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
-import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {TimeLockSigner} from '../signer/time-lock-signer';
 // import {ExchangeLockProvider} from './provider';
-import {ckb_lock_demo, ckb_timelock} from '../config';
+import {CKB_EXCHANGE_LOCK, CKB_EXCHANGE_TIMELOCK} from '../config';
 import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
 
 export class ExchangeLockMultiTx {
@@ -77,7 +75,7 @@ export class ExchangeLockMultiTx {
       .slice(0, 42);
 
     let fromLockScript = new Script(
-      ckb_lock_demo.typeHash,
+      CKB_EXCHANGE_LOCK.typeHash,
       fromLockArgs,
       HashType.type
     );
@@ -95,7 +93,7 @@ export class ExchangeLockMultiTx {
     );
 
     let toLockScript = new Script(
-      ckb_lock_demo.typeHash,
+      CKB_EXCHANGE_LOCK.typeHash,
       new Blake2bHasher()
         .hash(toLock.args.serialize())
         .serializeJson()

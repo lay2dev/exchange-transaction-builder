@@ -14,10 +14,10 @@ import {
   OutPoint,
 } from '@lay2/pw-core';
 import {
-  ckb_lock_demo,
-  ckb_timelock,
+  CKB_EXCHANGE_LOCK,
+  CKB_EXCHANGE_TIMELOCK,
   INDEXER_DEV_URL,
-  secp256k1_dep_cell,
+  SECP256K1_DEP_CELL,
 } from '../config';
 import {devChainConfig} from '../deploy/deploy';
 
@@ -72,15 +72,15 @@ export class TimeLockMultiTxBuilder extends Builder {
       [
         new CellDep(
           DepType.code,
-          new OutPoint(ckb_lock_demo.txHash, ckb_lock_demo.outputIndex)
+          new OutPoint(CKB_EXCHANGE_LOCK.txHash, CKB_EXCHANGE_LOCK.outputIndex)
         ),
         new CellDep(
           DepType.code,
-          new OutPoint(ckb_timelock.txHash, ckb_timelock.outputIndex)
+          new OutPoint(CKB_EXCHANGE_TIMELOCK.txHash, CKB_EXCHANGE_TIMELOCK.outputIndex)
         ),
         new CellDep(
           DepType.code,
-          new OutPoint(secp256k1_dep_cell.txHash, ckb_timelock.outputIndex)
+          new OutPoint(SECP256K1_DEP_CELL.txHash, SECP256K1_DEP_CELL.outputIndex)
         ),
         devChainConfig.defaultLock.cellDep,
       ]

@@ -1,18 +1,18 @@
-export const secp256k1_dep_cell = {
+export const SECP256K1_DEP_CELL = {
   txHash: '0x65a0d1f5a318138e9a8763d4fb960e7b5f999ac9323f372edde788b8e92a3392',
   outputIndex: '0x0',
   typeHash:
     '0xd6f4d542acd12d4e0f565530b1ff4626928a81dfaf0bd1a2950b2b96c92bfee0',
 };
 
-export const ckb_lock_demo = {
+export const CKB_EXCHANGE_LOCK = {
   txHash: '0x164d2e7630cdcb9533c979ef4d844905b7f4f590ecf37d5d753957ae7e053932',
   outputIndex: '0x0',
   typeHash:
     '0x18e5f7aa6f195cca8054f1cb4c32a149d9f6eae21bfb6db71c7f63afcc0d2f74',
 };
 
-export const ckb_timelock = {
+export const CKB_EXCHANGE_TIMELOCK = {
   txHash: '0x418b97d2b3c701a7b975ec4f93d03a7ecbcc2e6bd07aff28d3b4ca7421014fcf',
   outputIndex: '0x0',
   typeHash:

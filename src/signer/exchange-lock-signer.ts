@@ -36,16 +36,16 @@ export class ExchangeLockSigner extends Signer {
       '\u0019Ethereum Signed Message:\n' + '32',
       'utf-8'
     );
-    let keccak = new Keccak256Hasher();
+    
     for (const message of messages) {
       if (this.fromAddr.toLockScript().toHash() === message.lock.toHash()) {
         console.log('message:', message.message);
-        const m = keccak
+        const m = new Keccak256Hasher()
           .update(new Reader('0x' + prefix.toString('hex')))
           .update(new Reader(message.message))
           .digest();
         console.log('keccak message:', m);
-        if (this.exchangeLock.sign_flag) {
+        if (this.exchangeLock.sign_flag == 1) {
           for (let keyPair of this.multiKeyPair) {
             this.exchangeLock.signature.push(
               new Reader(keyPair.signRecoverable(m.serializeJson()))
@@ -62,7 +62,6 @@ export class ExchangeLockSigner extends Signer {
           console.log(lock);
           witnessLocks.push(lock);
         }
-        keccak.reset();
       } else {
         witnessLocks.push('0x');
       }

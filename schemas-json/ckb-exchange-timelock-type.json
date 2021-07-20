@@ -39,6 +39,10 @@
       "name": "Lock",
       "fields": [
         {
+          "name": "sign_flag",
+          "type": "byte"
+        },
+        {
           "name": "args",
           "type": "Args"
         },

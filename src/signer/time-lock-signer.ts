@@ -45,7 +45,7 @@ export class TimeLockSigner extends Signer {
           .update(new Reader(message.message))
           .digest();
         console.log('keccak message:', m);
-        if (this.timeLock.sign_flag) {
+        if (this.timeLock.sign_flag == 1) {
           for (let keyPair of this.multiKeyPair) {
             this.timeLock.signature.push(
               new Reader(keyPair.signRecoverable(m.serializeJson()))
