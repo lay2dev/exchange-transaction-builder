@@ -13,12 +13,7 @@ import {
   DepType,
   OutPoint,
 } from '@lay2/pw-core';
-import {
-  CKB_EXCHANGE_LOCK,
-  CKB_EXCHANGE_TIMELOCK,
-  INDEXER_DEV_URL,
-  SECP256K1_DEP_CELL,
-} from '../config';
+import {DEV_CONFIG} from '../config';
 import {devChainConfig} from '../deploy/deploy';
 
 export class ExchangeLockMultiTxBuilder extends Builder {
@@ -29,7 +24,7 @@ export class ExchangeLockMultiTxBuilder extends Builder {
     private amount: Amount,
     protected witnessArgs: WitnessArgs,
     feeRate: number = Builder.MIN_FEE_RATE,
-    collector: Collector = new IndexerCollector(INDEXER_DEV_URL)
+    collector: Collector = new IndexerCollector(DEV_CONFIG.indexer_url)
   ) {
     super(feeRate, collector, witnessArgs);
   }
@@ -72,15 +67,24 @@ export class ExchangeLockMultiTxBuilder extends Builder {
       [
         new CellDep(
           DepType.code,
-          new OutPoint(CKB_EXCHANGE_LOCK.txHash, CKB_EXCHANGE_LOCK.outputIndex)
+          new OutPoint(
+            DEV_CONFIG.ckb_exchange_lock.txHash,
+            DEV_CONFIG.ckb_exchange_lock.outputIndex
+          )
         ),
         new CellDep(
           DepType.code,
-          new OutPoint(CKB_EXCHANGE_TIMELOCK.txHash, CKB_EXCHANGE_TIMELOCK.outputIndex)
+          new OutPoint(
+            DEV_CONFIG.ckb_exchange_timelock.txHash,
+            DEV_CONFIG.ckb_exchange_timelock.outputIndex
+          )
         ),
         new CellDep(
           DepType.code,
-          new OutPoint(SECP256K1_DEP_CELL.txHash, SECP256K1_DEP_CELL.outputIndex)
+          new OutPoint(
+            DEV_CONFIG.secp256k1_lib_dep_cell.txHash,
+            DEV_CONFIG.secp256k1_lib_dep_cell.outputIndex
+          )
         ),
         devChainConfig.defaultLock.cellDep,
       ]

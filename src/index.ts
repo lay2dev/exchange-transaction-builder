@@ -1,17 +1,12 @@
 import {Amount, Blake2bHasher, ChainID, Reader, RPC} from '@lay2/pw-core';
 import Deploy, {devChainConfig} from './deploy/deploy';
-import {
-  exportMoleculeTypes,
-  getCellDataHash,
-  ROOT_PRIVATE_KEY,
-  transferAccount,
-} from './helpers';
+import {CKBEnv, exportMoleculeTypes, getCellDataHash, transferAccount} from './helpers';
 import {ExchangeLockSingleTx} from './exchangelock-single-tx/core';
 import {TimeLockSingleTx} from './time-lock-single-tx/core';
 
 import {Command} from 'commander';
 import {readFileSync} from 'fs';
-import {ACCOUNT_PRIVATE_KEY, CKB_DEV_URL} from './config';
+import {ACCOUNT_PRIVATE_KEY, DEV_CONFIG, ROOT_PRIVATE_KEY} from './config';
 import {ExchangeLockMultiTx} from './exchangelock-multi-tx/core';
 import {TimeLockMultiTx} from './timelock-multi-tx/core';
 const program = new Command();
@@ -28,11 +23,16 @@ program
     '--txOutputIndex <txOutputIndex>',
     'Which of existing lock script                Example:0x1'
   )
+  .option(
+    '--env <env>',
+    'the deploy environment                       One of `dev`,`testnet`,`mainnet`'
+  )
   .action(async (binaryFilePath, options) => {
-    let deploy = await new Deploy(ROOT_PRIVATE_KEY, binaryFilePath).init(
-      options.txHash,
-      options.txOutputIndex
-    );
+    let deploy = await new Deploy(
+      ROOT_PRIVATE_KEY,
+      binaryFilePath,
+      options.env
+    ).init(options.txHash, options.txOutputIndex);
     const txHash = await deploy.send();
     console.log('txHash:', txHash);
   });
@@ -48,9 +48,13 @@ program
     '--txOutputIndex <txOutputIndex>',
     'Which of cell                                Example:0x1'
   )
+  .option(
+    '--env <env>',
+    'the deploy environment                       One of `dev`,`testnet`,`mainnet`'
+  )
   .action(async options => {
     console.log(options.txHash, options.txOutputIndex);
-    await getCellDataHash(options.txHash, options.txOutputIndex);
+    await getCellDataHash(options.txHash, options.txOutputIndex,options.env);
   });
 
 program
@@ -83,7 +87,11 @@ program
   .description(
     'deploy transaction One of `TimeLockSingleTx`,`ExchangeLockSingleTx`'
   )
-  .action(async txType => {
+  .option(
+    '--env <env>',
+    'the deploy environment                       One of `dev`,`testnet`,`mainnet`'
+  )
+  .action(async (txType,options) => {
     let txHash;
     switch (txType) {
       case 'TimeLockSingleTx':
@@ -94,7 +102,7 @@ program
           1,
           ACCOUNT_PRIVATE_KEY[0],
           ACCOUNT_PRIVATE_KEY,
-          CKB_DEV_URL
+          DEV_CONFIG.ckb_url
         ).send();
         console.log('txHash:', txHash);
         break;
@@ -106,7 +114,7 @@ program
           1,
           ACCOUNT_PRIVATE_KEY[0],
           ACCOUNT_PRIVATE_KEY,
-          CKB_DEV_URL
+          DEV_CONFIG.ckb_url
         ).send();
         console.log('txHash:', txHash);
         break;
@@ -118,7 +126,7 @@ program
           1,
           ACCOUNT_PRIVATE_KEY[0],
           ACCOUNT_PRIVATE_KEY,
-          CKB_DEV_URL
+          DEV_CONFIG.ckb_url
         ).send();
         console.log('txHash:', txHash);
         break;
@@ -130,7 +138,7 @@ program
           1,
           ACCOUNT_PRIVATE_KEY[0],
           ACCOUNT_PRIVATE_KEY,
-          CKB_DEV_URL
+          options.env
         ).send();
         console.log('txHash:', txHash);
         break;

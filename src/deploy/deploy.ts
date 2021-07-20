@@ -15,11 +15,11 @@ import {
   transformers,
 } from '@lay2/pw-core';
 import * as fs from 'fs';
-import {CKBEnv,  ROOT_ADDRESS} from '../helpers';
+import {CKBEnv,  } from '../helpers';
 import DeployBuilder, {DeployBuilderOption} from './deploy-builder';
 import {privateKeyToAddress,AddressOptions,AddressPrefix} from '@nervosnetwork/ckb-sdk-utils';
 import { DefaultSigner } from '../signer/default-signer';
-import { CKB_DEV_URL, INDEXER_DEV_URL } from '../config';
+import {    DEV_CONFIG, TESTNET_CONFIG,   } from '../config';
 
 export const devChainConfig = {
   daoType: {
@@ -57,7 +57,7 @@ export const devChainConfig = {
     cellDep: new CellDep(
       DepType.depGroup,
       new OutPoint(
-        '0x169094447e4205f82dd5aebd8e0f41c9f3cc2b04fad83ef6deb2873aa5c36763',
+        '0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37',
         '0x0'
       )
     ),
@@ -123,9 +123,10 @@ export default class Deploy {
     const fromAddrStr = privateKeyToAddress(privateKey,{prefix:addressPrefix});
     this.fromAddr = new Address(fromAddrStr,AddressType.ckb,);
     this.toAddr = this.fromAddr;
-    this.collector = new IndexerCollector(INDEXER_DEV_URL);
-    const nodeUrl = this.ckbEnv === CKBEnv.dev ? CKB_DEV_URL : ROOT_ADDRESS.mainnet;
-    this.rpc = new RPC(CKB_DEV_URL);
+    const nodeUrl = this.ckbEnv === CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    const indexUrl =  this.ckbEnv === CKBEnv.dev ? DEV_CONFIG.indexer_url : TESTNET_CONFIG.indexer_url;
+    this.collector = new IndexerCollector(indexUrl);
+    this.rpc = new RPC(nodeUrl);
     this.signer = new DefaultSigner(new Blake2bHasher(),privateKey,this.fromAddr);
   }
 
@@ -148,14 +149,8 @@ export default class Deploy {
       txHash,
       index,
     };
-    this.builder = new DeployBuilder(this.rpc,this.fromAddr,this.toAddr, options);
+    this.builder = new DeployBuilder(this.ckbEnv,this.fromAddr,this.toAddr, options);
 
-    // await this.builder.pwCore.init(
-    //   this.provider,
-    //   this.collector,
-    //   chainId,
-    //   config
-    // );
     return this;
   }
 
@@ -167,7 +162,10 @@ export default class Deploy {
     tx.validate();
 
     let signedTx = await this.signer.sign(tx);
-    const txHash = this.rpc.send_transaction(transformers.TransformTransaction(signedTx));
+    // console.log("signed tx:",JSON.stringify(signedTx, null, 2));
+
+    let trans = transformers.TransformTransaction(signedTx);
+    const txHash = this.rpc.send_transaction(trans);
     console.log("txHash:",txHash);
     return txHash;
   }

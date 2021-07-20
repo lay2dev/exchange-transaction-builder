@@ -1,4 +1,4 @@
-import PWCore, {
+import  {
   Address,
   Amount,
   AmountUnit,
@@ -21,7 +21,8 @@ import PWCore, {
   OutPoint,
   RPC,
 } from '@lay2/pw-core';
-import { SYSTEM_TYPE_ID } from '../config';
+import {DEV_CONFIG, SYSTEM_TYPE_ID, TESTNET_CONFIG} from '../config';
+import { CKBEnv } from '../helpers';
 import { devChainConfig } from './deploy';
 
 export class DeployBuilderOption implements BuilderOption {
@@ -35,17 +36,18 @@ export class DeployBuilderOption implements BuilderOption {
   ) {}
 }
 
-
-
 export default class DeployBuilder extends Builder {
   // private _pwCore: PWCore;
+  private rpc: RPC;
   constructor(
-    private rpc:RPC,
+    private env:CKBEnv,
     private fromAddr: Address,
-    private toAddr:Address,
+    private toAddr: Address,
     protected options: DeployBuilderOption = {}
   ) {
     super(options.feeRate, options.collector, options.witnessArgs);
+    const nodeUrl = this.env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    this.rpc = new RPC(nodeUrl);
     // this._pwCore = new PWCore(CKB_URL);
   }
 
@@ -69,8 +71,9 @@ export default class DeployBuilder extends Builder {
 
   private async collectInputCell(
     neededAmount: Amount,
-    inputCells: Array<Cell>, inputSum: Amount,
-  ) : Promise<[Array<Cell>,Amount]> {
+    inputCells: Array<Cell>,
+    inputSum: Amount
+  ): Promise<[Array<Cell>, Amount]> {
     const cells = await this.collector.collect(this.fromAddr, {
       neededAmount,
     });
@@ -88,7 +91,7 @@ export default class DeployBuilder extends Builder {
         )},got ${inputSum.toString(AmountUnit.ckb)}`
       );
     }
-    return [inputCells,inputSum];
+    return [inputCells, inputSum];
   }
 
   async build(fee: Amount = Amount.ZERO): Promise<Transaction> {
@@ -111,9 +114,17 @@ export default class DeployBuilder extends Builder {
       outputCell.type = firstCell.type;
       outputCell.lock = firstCell.lock;
 
-      [inputCells,inputSum] = await this.collectInputCell(neededAmount.sub(inputSum), inputCells, inputSum);
+      [inputCells, inputSum] = await this.collectInputCell(
+        neededAmount.sub(inputSum),
+        inputCells,
+        inputSum
+      );
     } else {
-      [inputCells,inputSum] = await this.collectInputCell(neededAmount, inputCells, inputSum);
+      [inputCells, inputSum] = await this.collectInputCell(
+        neededAmount,
+        inputCells,
+        inputSum
+      );
 
       const firstInput = new Reader(
         SerializeCellInput(
@@ -136,7 +147,11 @@ export default class DeployBuilder extends Builder {
     );
 
     const tx = new Transaction(
-      new RawTransaction(inputCells, [outputCell, changeCell],[devChainConfig.defaultLock.cellDep]),
+      new RawTransaction(
+        inputCells,
+        [outputCell, changeCell],
+        [devChainConfig.defaultLock.cellDep]
+      ),
       [Builder.WITNESS_ARGS.RawSecp256k1]
     );
 

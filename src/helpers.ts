@@ -6,7 +6,9 @@ import PWCore, {
   Blake2bHasher,
   Builder,
   Cell,
+  CellDep,
   ChainID,
+  DepType,
   HashType,
   IndexerCollector,
   OutPoint,
@@ -17,7 +19,7 @@ import PWCore, {
 } from '@lay2/pw-core';
 import {exec} from 'child_process';
 import {readdir, readFileSync} from 'fs';
-import {ACCOUNT_PRIVATE_KEY, CKB_DEV_URL, INDEXER_DEV_URL} from './config';
+import {ACCOUNT_PRIVATE_KEY, DEV_CONFIG, TESTNET_CONFIG} from './config';
 import {devChainConfig} from './deploy/deploy';
 import {ExchangeLockAddr} from './exchange-lock';
 
@@ -25,8 +27,7 @@ export const enum ROOT_ADDRESS {
   testnet = 'ckt1qyqr9t744z3dah6udvfczvzflcyfrwur0qpsxdz3g9',
   mainnet = 'ckb1qyqr9t744z3dah6udvfczvzflcyfrwur0qpsmguwye',
 }
-export const ROOT_PRIVATE_KEY =
-  '0x7b075af14d5340073d469277d716c7dc8e43ff01bbb02d9e90af0aa2ed348397';
+
 export const enum SCRIPT_PATH {
   ckb_lock_demo = './script_builder/release/ckb_lock_demo',
   ckb_timelock = './script_builder/release/ckb_timelock',
@@ -34,9 +35,9 @@ export const enum SCRIPT_PATH {
 }
 
 export enum CKBEnv {
-  testnet,
-  mainnet,
-  dev,
+  testnet = 'testnet',
+  mainnet = 'mainnet',
+  dev = 'dev',
 }
 
 export function exportMoleculeTypes() {
@@ -83,8 +84,8 @@ export async function transferAccount() {
   // init `RawProvider` with private key
   const privateKey = ACCOUNT_PRIVATE_KEY[0];
   const provider = new RawProvider(privateKey);
-  const collector = new IndexerCollector(INDEXER_DEV_URL);
-  const pwcore = await new PWCore(CKB_DEV_URL).init(
+  const collector = new IndexerCollector(DEV_CONFIG.indexer_url);
+  const pwcore = await new PWCore(DEV_CONFIG.ckb_url).init(
     provider,
     collector,
     ChainID.ckb_dev,
@@ -121,8 +122,14 @@ export async function transferAccount() {
   console.log(txHash);
 }
 
-export async function getCellDataHash(txHash: string, index: string) {
-  const rpc = new RPC(CKB_DEV_URL);
+export async function getCellDataHash(
+  txHash: string,
+  index: string,
+  env: CKBEnv
+) {
+  const nodeUrl =
+    env === CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+  const rpc = new RPC(nodeUrl);
   const cell = await Cell.loadFromBlockchain(rpc, new OutPoint(txHash, index));
 
   console.log('cell.data.length', new Reader(cell.getHexData()).length());
@@ -134,4 +141,91 @@ export async function getCellDataHash(txHash: string, index: string) {
   console.log('cell.dataHash', dataHash);
   console.log('cell.typeHash', cell.type?.toHash());
   console.log('cell.lockHahs', cell.lock.codeHash);
+}
+
+export enum CellDepType {
+  secp256k1_dep_cell,
+  secp256k1_lib_dep_cell,
+  ckb_exchange_lock,
+  ckb_exchange_timelock,
+}
+export function getCellDep(env: CKBEnv, type: CellDepType): CellDep {
+  switch (env) {
+    case CKBEnv.dev:
+      switch (type) {
+        case CellDepType.secp256k1_dep_cell:
+          return new CellDep(
+            DepType.depGroup,
+            new OutPoint(
+              DEV_CONFIG.secp256k1_dep_cell.txHash,
+              DEV_CONFIG.secp256k1_dep_cell.outputIndex
+            )
+          );
+        case CellDepType.secp256k1_lib_dep_cell:
+          return new CellDep(
+            DepType.code,
+            new OutPoint(
+              DEV_CONFIG.secp256k1_lib_dep_cell.txHash,
+              DEV_CONFIG.secp256k1_lib_dep_cell.outputIndex
+            )
+          );
+        case CellDepType.ckb_exchange_lock:
+          return new CellDep(
+            DepType.code,
+            new OutPoint(
+              DEV_CONFIG.ckb_exchange_lock.txHash,
+              DEV_CONFIG.ckb_exchange_lock.outputIndex
+            )
+          );
+        case CellDepType.ckb_exchange_timelock:
+          return new CellDep(
+            DepType.code,
+            new OutPoint(
+              DEV_CONFIG.ckb_exchange_timelock.txHash,
+              DEV_CONFIG.ckb_exchange_timelock.outputIndex
+            )
+          );
+        default:
+          throw new Error('invalid cell dep type');
+      }
+    case CKBEnv.testnet:
+      switch (type) {
+        case CellDepType.secp256k1_dep_cell:
+          return new CellDep(
+            DepType.depGroup,
+            new OutPoint(
+              TESTNET_CONFIG.secp256k1_dep_cell.txHash,
+              TESTNET_CONFIG.secp256k1_dep_cell.outputIndex
+            )
+          );
+        case CellDepType.secp256k1_lib_dep_cell:
+          return new CellDep(
+            DepType.code,
+            new OutPoint(
+              TESTNET_CONFIG.secp256k1_lib_dep_cell.txHash,
+              TESTNET_CONFIG.secp256k1_lib_dep_cell.outputIndex
+            )
+          );
+        case CellDepType.ckb_exchange_lock:
+          return new CellDep(
+            DepType.code,
+            new OutPoint(
+              TESTNET_CONFIG.ckb_exchange_lock.txHash,
+              TESTNET_CONFIG.ckb_exchange_lock.outputIndex
+            )
+          );
+        case CellDepType.ckb_exchange_timelock:
+          return new CellDep(
+            DepType.code,
+            new OutPoint(
+              TESTNET_CONFIG.ckb_exchange_timelock.txHash,
+              TESTNET_CONFIG.ckb_exchange_timelock.outputIndex
+            )
+          );
+        default:
+          throw new Error('invalid cell dep type');
+      }
+    default:
+      throw new Error('invalid ckb env');
+  }
 }

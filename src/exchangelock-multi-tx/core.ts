@@ -13,8 +13,9 @@ import {ExchangeLockMultiTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 // import {ExchangeLockProvider} from './provider';
-import {CKB_EXCHANGE_LOCK, CKB_EXCHANGE_TIMELOCK} from '../config';
+import {DEV_CONFIG, TESTNET_CONFIG, } from '../config';
 import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
+import { CKBEnv } from '../helpers';
 
 export class ExchangeLockMultiTx {
   private _rpc: RPC;
@@ -28,10 +29,11 @@ export class ExchangeLockMultiTx {
     requestFirstN: number,
     singlePrivateKey: string,
     multiPrivateKey: Array<string>,
-    nodeUrl: string,
+    env: CKBEnv,
     feeRate?: number,
     collector?: Collector
   ) {
+    const nodeUrl = env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
     this._rpc = new RPC(nodeUrl);
 
     let multiKeyPair = [];
@@ -75,7 +77,7 @@ export class ExchangeLockMultiTx {
       .slice(0, 42);
 
     let fromLockScript = new Script(
-      CKB_EXCHANGE_LOCK.typeHash,
+      DEV_CONFIG.ckb_exchange_lock.typeHash,
       fromLockArgs,
       HashType.type
     );
@@ -93,7 +95,7 @@ export class ExchangeLockMultiTx {
     );
 
     let toLockScript = new Script(
-      CKB_EXCHANGE_LOCK.typeHash,
+      DEV_CONFIG.ckb_exchange_lock.typeHash,
       new Blake2bHasher()
         .hash(toLock.args.serialize())
         .serializeJson()
