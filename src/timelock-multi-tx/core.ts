@@ -67,7 +67,7 @@ export class TimeLockMultiTx {
     const userLockScriptHash = new Reader(userLockScript.toHash().slice(0, 42));
 
     const timeLock = new TimeLock(
-      0,
+      1,
       new TimeLockArgs(
         threshold,
         requestFirstN,
@@ -79,11 +79,8 @@ export class TimeLockMultiTx {
     );
 
     let inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
-    let outputCell = new Cell(
-      inputCell.capacity,
-      adminLockScript,
-      inputCell.type
-    );
+    let outputCell = inputCell.clone();
+    outputCell.lock = adminLockScript;
 
     const signer = new TimeLockSigner(
       inputCell.lock.toHash(),

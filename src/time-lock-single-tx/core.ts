@@ -80,7 +80,8 @@ export class TimeLockSingleTx {
     );
 
     let inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
-    let outputCell = new Cell(inputCell.capacity,userLockScript,inputCell.type);
+    let outputCell = inputCell.clone();
+    outputCell.lock = userLockScript;
 
     const signer = new TimeLockSigner(
       inputCell.lock.toHash(),

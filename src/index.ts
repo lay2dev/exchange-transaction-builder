@@ -132,43 +132,34 @@ program
   .description('just for test')
 
   .action(async () => {
-    const lock = new ExchangeLock(
-      new ExchangeLockArgs(3, 1, new Reader('0x' + '1'.repeat(40)), [
-        new Reader('0x' + '2'.repeat(40)),
-        new Reader('0x' + '3'.repeat(40)),
-        new Reader('0x' + '4'.repeat(40)),
-        new Reader('0x' + '5'.repeat(40)),
-        new Reader('0x' + '6'.repeat(40)),
-      ]),
-      0,
-      []
-    );
-    const witnessArgs = {
-      lock: lock.serialize().serializeJson(),
-      input_type: '',
-      output_type: '',
-    };
-    console.log(lock.serialize().serializeJson());
-    console.log(
-      new Reader(
-        SerializeLock({
-          args: {
-            threshold: 3,
-            request_first_n: 1,
-            single_pubkey: new Reader('0x' + '1'.repeat(40)),
-            multi_pubkey: [
-              new Reader('0x' + '2'.repeat(40)),
-              new Reader('0x' + '3'.repeat(40)),
-              new Reader('0x' + '4'.repeat(40)),
-              new Reader('0x' + '5'.repeat(40)),
-              new Reader('0x' + '6'.repeat(40)),
-            ],
-          },
-          sign_flag: 0,
-          signature: [],
-        })
-      ).serializeJson()
-    );
+    let multiPubKeyHash = [];
+    for (let privateKey of ACCOUNT_PRIVATE_KEY) {
+      let keyPair = new ECPair(privateKey);
+      multiPubKeyHash.push(
+        new Reader(
+          new Blake2bHasher()
+            .hash(new Reader(keyPair.publicKey))
+            .toArrayBuffer()
+            .slice(0, 20)
+        )
+      );
+    }
+    let lock_args_hash = new Reader(
+      new Blake2bHasher().hash(
+        new ExchangeLockArgs(
+          3,
+          1,
+          new Reader(
+            new Blake2bHasher()
+              .hash(new ECPair(ROOT_PRIVATE_KEY).publicKey)
+              .toArrayBuffer()
+              .slice(0, 20)
+          ),
+          multiPubKeyHash
+        ).serialize()
+      )
+    ).serializeJson();
+    console.log(lock_args_hash);
   });
 
 program
@@ -202,7 +193,12 @@ program
       options.env == CKBEnv.dev
         ? DEV_CONFIG.secp256k1_dep_cell.typeHash
         : TESTNET_CONFIG.secp256k1_dep_cell.typeHash,
-      new ECPair(ROOT_PRIVATE_KEY).publicKey,
+      new Reader(
+        new Blake2bHasher()
+          .hash(new Reader(new ECPair(ROOT_PRIVATE_KEY).publicKey))
+          .toArrayBuffer()
+          .slice(0, 20)
+      ).serializeJson(),
       HashType.type
     );
 
@@ -226,11 +222,11 @@ program
       new Blake2bHasher()
         .hash(
           new ExchangeLockArgs(
-            2,
+            3,
             1,
             new Reader(
               new Blake2bHasher()
-                .hash(new ECPair(ROOT_PRIVATE_KEY).publicKey)
+                .hash(new Reader(new ECPair(ROOT_PRIVATE_KEY).publicKey))
                 .toArrayBuffer()
                 .slice(0, 20)
             ),

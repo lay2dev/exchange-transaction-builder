@@ -19,7 +19,7 @@ import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
 // import {ExchangeLockProvider} from './provider';
 import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
 import {CKBEnv} from '../helpers';
-import { getConstantValue } from 'typescript';
+import {getConstantValue} from 'typescript';
 
 export class ExchangeLockSingleTx {
   constructor(
@@ -29,7 +29,7 @@ export class ExchangeLockSingleTx {
   ) {}
   static async create(
     fromOutPoint: OutPoint,
-    userLockScript:Script,
+    userLockScript: Script,
     threshold: number,
     requestFirstN: number,
     singlePrivateKey: string,
@@ -74,29 +74,28 @@ export class ExchangeLockSingleTx {
       []
     );
 
-    const timeLock = new TimeLock(
-      0,
-      new TimeLockArgs(
-        threshold,
-        requestFirstN,
-        multiPubKeyHash,
-        singlePubKeyHash,
-        new Reader(userLockScript.toHash().slice(0,42))
-      ),
-      []
-    );
-
     let timeLockScript = new Script(
-      DEV_CONFIG.ckb_exchange_timelock.typeHash,
+      env == CKBEnv.dev
+        ? DEV_CONFIG.ckb_exchange_timelock.typeHash
+        : TESTNET_CONFIG.ckb_exchange_timelock.typeHash,
       new Blake2bHasher()
-        .hash(timeLock.args.serialize())
+        .hash(
+          new TimeLockArgs(
+            threshold,
+            requestFirstN,
+            multiPubKeyHash,
+            singlePubKeyHash,
+            new Reader(userLockScript.toHash().slice(0, 42))
+          ).serialize()
+        )
         .serializeJson()
         .slice(0, 42),
       HashType.type
     );
 
     const inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
-    let outputCell = new Cell(inputCell.capacity,timeLockScript,inputCell.type);
+    let outputCell = inputCell.clone();
+    outputCell.lock = timeLockScript;
 
     const signer = new ExchangeLockSigner(
       inputCell.lock.toHash(),

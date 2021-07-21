@@ -46,13 +46,12 @@ export class TimeLockMultiTxBuilder extends Builder {
           getCellDep(this.env, CellDepType.ckb_exchange_timelock),
           getCellDep(this.env, CellDepType.secp256k1_dep_cell),
           getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
+          getCellDep(this.env,CellDepType.nft_type),
         ]
       ),
       [calWitnessArgs]
     );
-    for (let i in calTx.raw.inputs) {
-      calTx.raw.inputs[i].since = '0x8000000000000064';
-    }
+
     const fee = Builder.calcFee(calTx, this.feeRate);
 
     this.timeLock.signature = [];
@@ -69,13 +68,12 @@ export class TimeLockMultiTxBuilder extends Builder {
           getCellDep(this.env, CellDepType.ckb_exchange_timelock),
           getCellDep(this.env, CellDepType.secp256k1_dep_cell),
           getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
+          getCellDep(this.env,CellDepType.nft_type),
         ]
       ),
       [witnessArgs]
     );
-    for (let i in tx.raw.inputs) {
-      tx.raw.inputs[i].since = '0x8000000000000064';
-    }
+
     tx.raw.outputs[0].capacity = tx.raw.outputs[0].capacity.sub(fee);
 
     return tx;

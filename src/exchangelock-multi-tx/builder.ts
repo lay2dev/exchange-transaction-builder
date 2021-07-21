@@ -39,6 +39,7 @@ export class ExchangeLockMultiTxBuilder extends Builder {
           getCellDep(this.env, CellDepType.ckb_exchange_lock),
           getCellDep(this.env, CellDepType.secp256k1_dep_cell),
           getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
+          getCellDep(this.env,CellDepType.nft_type),
         ]
       ),
       [calWitnessArgs]
@@ -60,6 +61,7 @@ export class ExchangeLockMultiTxBuilder extends Builder {
           getCellDep(this.env, CellDepType.ckb_exchange_lock),
           getCellDep(this.env, CellDepType.secp256k1_dep_cell),
           getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
+          getCellDep(this.env,CellDepType.nft_type),
         ]
       ),
       [witnessArgs]

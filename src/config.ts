@@ -41,13 +41,13 @@ export const TESTNET_CONFIG = {
       '0x1c49a2839478f6a5ecb1ef3dad6d21815153059a7cbdfc3269ea7c38b996b52f',
   },
   ckb_exchange_lock :{
-    txHash: '0xcf9d94d3b4657f56cf638eb4102efe6705bffd1be3da9c9b59868cfa5dd17f88',
+    txHash: '0x659e46269ab831f86a3d50cd8fc04ae03931bcd81ae76c51a7f38db3959485ca',
     outputIndex: '0x0',
     typeHash:
       '0xe499b8b1da443048be8273da58af7b180d294b456feb808012b178d7ab67ee24',
   },
   ckb_exchange_timelock :{
-    txHash: '0x3e4dac4735bfca424d8ae719f85f90d968b97ea1a2282d4874446bf9fd8970b6',
+    txHash: '0x5b0c0289bd11cbbe50315dc5398dcd044da9f24ba239145f96176a199e002af2',
     outputIndex: '0x0',
     typeHash:
       '0xac6cbc6289beac9c33da093807e9c8851c6d9bf82c00ee8010208cbee8df5235',
