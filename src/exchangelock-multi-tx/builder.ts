@@ -1,104 +1,71 @@
 import {
-  Address,
-  Amount,
-  AmountUnit,
   Builder,
   Transaction,
   Cell,
-  Collector,
   RawTransaction,
   WitnessArgs,
-  IndexerCollector,
-  CellDep,
-  DepType,
   OutPoint,
+  RPC,
+  Script,
+  Reader,
 } from '@lay2/pw-core';
-import {DEV_CONFIG} from '../config';
-import {devChainConfig} from '../deploy/deploy';
+import {CellDepType, CKBEnv, getCellDep} from '../helpers';
+import { ExchangeLock } from '../types/ckb-exchange-lock';
 
 export class ExchangeLockMultiTxBuilder extends Builder {
   constructor(
-    private fromAddr: Address,
-    private toAddr: Address,
-    protected fee: Amount = Amount.ZERO,
-    private amount: Amount,
-    protected witnessArgs: WitnessArgs,
-    feeRate: number = Builder.MIN_FEE_RATE,
-    collector: Collector = new IndexerCollector(DEV_CONFIG.indexer_url)
+    private inputCell: Cell,
+    private outputCell: Cell,
+    protected exchangeLock: ExchangeLock,
+    private env: CKBEnv
   ) {
-    super(feeRate, collector, witnessArgs);
+    super();
   }
 
   async build(): Promise<Transaction> {
-    const outputCell = new Cell(this.amount, this.toAddr.toLockScript());
-
-    const neededAmount = this.amount.add(Builder.MIN_CHANGE).add(this.fee);
-    let inputSum = new Amount('0');
-    const inputCells: Cell[] = [];
-
-    console.log(this.fromAddr);
-
-    const cells = await this.collector.collect(this.fromAddr, {
-      neededAmount,
-    });
-
-    for (const cell of cells) {
-      inputCells.push(cell);
-      inputSum = inputSum.add(cell.capacity);
-      if (inputSum.gte(neededAmount)) break;
+    for (let _i in this.exchangeLock.args.multi_pubkey){
+      this.exchangeLock.signature.push(new Reader('0x' + '0'.repeat(130)));
     }
-
-    if (inputSum.lt(neededAmount)) {
-      throw new Error(
-        `input capacity not enough,need ${neededAmount.toString(
-          AmountUnit.ckb
-        )},got ${inputSum.toString(AmountUnit.ckb)}`
-      );
-    }
-
-    const changeCell = new Cell(
-      inputSum.sub(outputCell.capacity),
-      this.fromAddr.toLockScript()
+    const calWitnessArgs = {
+      lock: this.exchangeLock.serialize().serializeJson(),
+      input_type: '',
+      output_type: '',
+    };
+    const calTx = new Transaction(
+      new RawTransaction(
+        [this.inputCell],
+        [this.outputCell],
+        [
+          getCellDep(this.env, CellDepType.ckb_exchange_lock),
+          getCellDep(this.env, CellDepType.secp256k1_dep_cell),
+          getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
+        ]
+      ),
+      [calWitnessArgs]
     );
 
-    let rawTx = new RawTransaction(
-      inputCells,
-      [outputCell, changeCell],
-      [
-        new CellDep(
-          DepType.code,
-          new OutPoint(
-            DEV_CONFIG.ckb_exchange_lock.txHash,
-            DEV_CONFIG.ckb_exchange_lock.outputIndex
-          )
-        ),
-        new CellDep(
-          DepType.code,
-          new OutPoint(
-            DEV_CONFIG.ckb_exchange_timelock.txHash,
-            DEV_CONFIG.ckb_exchange_timelock.outputIndex
-          )
-        ),
-        new CellDep(
-          DepType.code,
-          new OutPoint(
-            DEV_CONFIG.secp256k1_lib_dep_cell.txHash,
-            DEV_CONFIG.secp256k1_lib_dep_cell.outputIndex
-          )
-        ),
-        devChainConfig.defaultLock.cellDep,
-      ]
+    const fee = Builder.calcFee(calTx, this.feeRate);
+
+    this.exchangeLock.signature = [];
+    const witnessArgs = {
+      lock: this.exchangeLock.serialize().serializeJson(),
+      input_type: '',
+      output_type: '',
+    };
+    const tx = new Transaction(
+      new RawTransaction(
+        [this.inputCell],
+        [this.outputCell],
+        [
+          getCellDep(this.env, CellDepType.ckb_exchange_lock),
+          getCellDep(this.env, CellDepType.secp256k1_dep_cell),
+          getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
+        ]
+      ),
+      [witnessArgs]
     );
+    tx.raw.outputs[0].capacity = tx.raw.outputs[0].capacity.sub(fee);
 
-    const tx = new Transaction(rawTx, [this.witnessArgs]);
-
-    this.fee = Builder.calcFee(tx, this.feeRate).add(
-      new Amount('1000', AmountUnit.shannon)
-    );
-
-    changeCell.capacity = changeCell.capacity.sub(this.fee);
-    tx.raw.outputs.pop();
-    tx.raw.outputs.push(changeCell);
     return tx;
   }
 }

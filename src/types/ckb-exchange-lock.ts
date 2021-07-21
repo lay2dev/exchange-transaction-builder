@@ -14,6 +14,9 @@ export class ExchangeLockArgs {
   serialize() {
     return new Reader(SerializeArgs(this));
   }
+  clone() {
+    return new ExchangeLockArgs(this.threshold,this.request_first_n,this.single_pubkey,this.multi_pubkey.slice());
+  }
 }
 
 export class ExchangeLock {
@@ -24,5 +27,8 @@ export class ExchangeLock {
   ) {}
   serialize() {
     return new Reader(SerializeLock(this));
+  }
+  clone(){
+    return new ExchangeLock(this.args.clone(),this.sign_flag,this.signature.slice());
   }
 }

@@ -35,6 +35,7 @@ import {ExchangeLock, ExchangeLockArgs} from './types/ckb-exchange-lock';
 import {TimeLock, TimeLockArgs} from './types/ckb-exchange-timelock';
 import {ExchangeLockSigner} from './signer/exchange-lock-signer';
 import {DefaultSigner} from './signer/default-signer';
+import { getConstantValue } from 'typescript';
 
 export const enum ROOT_ADDRESS {
   testnet = 'ckt1qyqr9t744z3dah6udvfczvzflcyfrwur0qpsxdz3g9',
@@ -122,7 +123,6 @@ export async function transferAccount() {
     ACCOUNT_PRIVATE_KEY
   );
   const toAddr = exchangeLockAddr.address;
-  console.log(toAddr);
 
   // const fromBefore = await collector.getBalance(provider.address);
   // const toBefore = await collector.getBalance(toAddr);
@@ -132,6 +132,8 @@ export async function transferAccount() {
     new Amount('100000', AmountUnit.ckb),
     options
   );
+  console.log("toAddresScript:",toAddr.toLockScript());
+  console.log("toAddr:",toAddr);
   console.log(txHash);
 }
 
@@ -186,8 +188,9 @@ export async function transferAccountForNFT(
     .serializeJson()
     .slice(0, 42);
 
+  const lockTypeHash = env == CKBEnv.dev ? DEV_CONFIG.ckb_exchange_lock.typeHash : TESTNET_CONFIG.ckb_exchange_lock.typeHash;
   let exchangeLockScript = new Script(
-    DEV_CONFIG.ckb_exchange_lock.typeHash,
+    lockTypeHash,
     exchangeLockArgs,
     HashType.type
   );
@@ -224,6 +227,7 @@ export async function transferAccountForNFT(
   tx.raw.outputs[0].capacity = tx.raw.outputs[0].capacity.sub(fee);
   let sign_tx = await signer.sign(tx);
   console.log(JSON.stringify(sign_tx, null, 2));
+  sign_tx = sign_tx.validate();
 
   let transform = transformers.TransformTransaction(sign_tx);
   let txHash = await rpc.send_transaction(transform);

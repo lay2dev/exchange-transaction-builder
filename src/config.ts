@@ -13,16 +13,16 @@ export const DEV_CONFIG = {
       '0xd6f4d542acd12d4e0f565530b1ff4626928a81dfaf0bd1a2950b2b96c92bfee0',
   },
   ckb_exchange_lock :{
-    txHash: '0x164d2e7630cdcb9533c979ef4d844905b7f4f590ecf37d5d753957ae7e053932',
+    txHash: '0x640cf49f57210110be256ddd16e885c125e3721fe13bd0987f225c16ccc8cfd2',
     outputIndex: '0x0',
     typeHash:
-      '0x18e5f7aa6f195cca8054f1cb4c32a149d9f6eae21bfb6db71c7f63afcc0d2f74',
+      '0xe5e42c1fb347a0e2ffd5f5da4c564c472b8e71945167ad5a480047e5b66b821b',
   },
   ckb_exchange_timelock :{
-    txHash: '0x418b97d2b3c701a7b975ec4f93d03a7ecbcc2e6bd07aff28d3b4ca7421014fcf',
+    txHash: '0x342b5ed966bb299642310fe69562e6d33a6c4c229ab3b39a2ad187b81d862ed1',
     outputIndex: '0x0',
     typeHash:
-      '0x317e61e3dafb230f53d4e416824549567d216498bc8e1b0922af9bf89a1186c2',
+      '0x822dbe56e83d6eadb7915d63395f8d174015dbfce76e08494874fbac0dba3f21',
   },
 };
 

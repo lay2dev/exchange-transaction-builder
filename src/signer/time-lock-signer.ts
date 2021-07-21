@@ -13,7 +13,7 @@ export class TimeLockSigner extends Signer {
   private singleKeyPair: ECPair;
   private multiKeyPair: Array<ECPair>;
   constructor(
-    private fromAddr: Address,
+    private fromLockHash: string,
     singlePrivateKey: string,
     multiPrivateKey: Array<string>,
     private timeLock: TimeLock,
@@ -38,7 +38,7 @@ export class TimeLockSigner extends Signer {
     );
     let keccak = new Keccak256Hasher();
     for (const message of messages) {
-      if (this.fromAddr.toLockScript().toHash() === message.lock.toHash()) {
+      if (this.fromLockHash === message.lock.toHash()) {
         console.log('message:', message.message);
         const m = keccak
           .update(new Reader('0x' + prefix.toString('hex')))

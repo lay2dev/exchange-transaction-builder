@@ -2,8 +2,10 @@ import {
   Address,
   Amount,
   Blake2bHasher,
+  Cell,
   Collector,
   HashType,
+  OutPoint,
   Reader,
   RPC,
   Script,
@@ -15,25 +17,28 @@ import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockSigner} from '../signer/time-lock-signer';
 // import {ExchangeLockProvider} from './provider';
-import {DEV_CONFIG, } from '../config';
+import {DEV_CONFIG, TESTNET_CONFIG, } from '../config';
+import { CKBEnv } from '../helpers';
 
 export class TimeLockSingleTx {
-  private _rpc: RPC;
-  private builder: TimeLockSingleTxBuilder;
-  private signer: TimeLockSigner;
 
   constructor(
-    fee: Amount = Amount.ZERO,
-    amount: Amount,
+    private readonly _rpc: RPC,
+    private builder: TimeLockSingleTxBuilder,
+    private signer: TimeLockSigner
+  ) {}
+  static async create(
+    fromOutPoint: OutPoint,
+    userLockScript:Script,
     threshold: number,
     requestFirstN: number,
     singlePrivateKey: string,
     multiPrivateKey: Array<string>,
-    nodeUrl: string,
-    feeRate?: number,
-    collector?: Collector
-  ) {
-    this._rpc = new RPC(nodeUrl);
+    env: CKBEnv = CKBEnv.testnet
+  ):Promise<TimeLockSingleTx> {
+    const nodeUrl =
+      env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    const rpc = new RPC(nodeUrl);
 
     let multiKeyPair = [];
     let multiPubKeyHash = [];
@@ -58,30 +63,8 @@ export class TimeLockSingleTx {
         .slice(0, 20)
     );
 
-    const exchangeLock = new ExchangeLock(
-      new ExchangeLockArgs(
-        threshold,
-        requestFirstN,
-        singlePubKeyHash,
-        multiPubKeyHash
-      ),
-      0,
-      []
-    );
-
-    const exchangeLockArgs = new Blake2bHasher()
-      .update(exchangeLock.args.serialize().toArrayBuffer())
-      .digest()
-      .serializeJson()
-      .slice(0, 42);
-
-    let exchangeLockScript = new Script(
-      DEV_CONFIG.ckb_exchange_lock.typeHash,
-      exchangeLockArgs,
-      HashType.type
-    );
-    const exchangeLockScriptHash = new Reader(
-      exchangeLockScript.toHash().slice(0, 42)
+    const userLockScriptHash = new Reader(
+      userLockScript.toHash().slice(0, 42)
     );
 
     const timeLock = new TimeLock(
@@ -91,44 +74,30 @@ export class TimeLockSingleTx {
         requestFirstN,
         multiPubKeyHash,
         singlePubKeyHash,
-        exchangeLockScriptHash
+        userLockScriptHash
       ),
       []
     );
-    let toAddr = Address.fromLockScript(exchangeLockScript);
 
-    let timeLockScript = new Script(
-      DEV_CONFIG.ckb_exchange_timelock.typeHash,
-      new Blake2bHasher()
-        .hash(timeLock.args.serialize())
-        .serializeJson()
-        .slice(0, 42),
-      HashType.type
-    );
-    const fromAddr = Address.fromLockScript(timeLockScript);
+    let inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
+    let outputCell = new Cell(inputCell.capacity,userLockScript,inputCell.type);
 
-    const witnessArgs = {
-      lock: timeLock.serialize().serializeJson(),
-      input_type: '',
-      output_type: '',
-    };
-    this.builder = new TimeLockSingleTxBuilder(
-      fromAddr,
-      toAddr,
-      fee,
-      amount,
-      witnessArgs,
-      feeRate,
-      collector
-    );
-
-    this.signer = new TimeLockSigner(
-      fromAddr,
+    const signer = new TimeLockSigner(
+      inputCell.lock.toHash(),
       singlePrivateKey,
       multiPrivateKey,
       timeLock,
       new Blake2bHasher()
     );
+
+    const builder = new TimeLockSingleTxBuilder(
+      inputCell,
+      outputCell,
+      timeLock,
+      env
+    );
+
+    return new TimeLockSingleTx(rpc, builder, signer);
   }
 
   async send(): Promise<string> {
@@ -136,6 +105,7 @@ export class TimeLockSingleTx {
 
     let sign_tx = await this.signer.sign(tx);
     console.log(JSON.stringify(sign_tx, null, 2));
+    sign_tx = sign_tx.validate();
 
     let transform = transformers.TransformTransaction(sign_tx);
     let txHash = this._rpc.send_transaction(transform);

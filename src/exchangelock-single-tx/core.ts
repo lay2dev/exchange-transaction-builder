@@ -2,8 +2,10 @@ import {
   Address,
   Amount,
   Blake2bHasher,
+  Cell,
   Collector,
   HashType,
+  OutPoint,
   Reader,
   RPC,
   Script,
@@ -15,25 +17,28 @@ import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
 // import {ExchangeLockProvider} from './provider';
-import {DEV_CONFIG, } from '../config';
+import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
+import {CKBEnv} from '../helpers';
+import { getConstantValue } from 'typescript';
 
 export class ExchangeLockSingleTx {
-  private readonly _rpc: RPC;
-  private builder: ExchangeLockSingleTxBuilder;
-  private signer: ExchangeLockSigner;
-
   constructor(
-    fee: Amount = Amount.ZERO,
-    amount: Amount,
+    private readonly _rpc: RPC,
+    private builder: ExchangeLockSingleTxBuilder,
+    private signer: ExchangeLockSigner
+  ) {}
+  static async create(
+    fromOutPoint: OutPoint,
+    userLockScript:Script,
     threshold: number,
     requestFirstN: number,
     singlePrivateKey: string,
     multiPrivateKey: Array<string>,
-    nodeUrl: string,
-    feeRate?: number,
-    collector?: Collector
-  ) {
-    this._rpc = new RPC(nodeUrl);
+    env: CKBEnv = CKBEnv.testnet
+  ): Promise<ExchangeLockSingleTx> {
+    const nodeUrl =
+      env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    const rpc = new RPC(nodeUrl);
 
     let multiKeyPair = [];
     let multiPubKeyHash = [];
@@ -69,19 +74,6 @@ export class ExchangeLockSingleTx {
       []
     );
 
-    const exchangeLockArgs = new Blake2bHasher()
-      .hash(exchangeLock.args.serialize())
-      .serializeJson()
-      .slice(0, 42);
-
-    let exchangeLockScript = new Script(
-      DEV_CONFIG.ckb_exchange_lock.typeHash,
-      exchangeLockArgs,
-      HashType.type
-    );
-    const exchangeLockScriptHash = new Reader(
-      exchangeLockScript.toHash().slice(0, 42)
-    );
     const timeLock = new TimeLock(
       0,
       new TimeLockArgs(
@@ -89,11 +81,10 @@ export class ExchangeLockSingleTx {
         requestFirstN,
         multiPubKeyHash,
         singlePubKeyHash,
-        exchangeLockScriptHash
+        new Reader(userLockScript.toHash().slice(0,42))
       ),
       []
     );
-    let fromAddr = Address.fromLockScript(exchangeLockScript);
 
     let timeLockScript = new Script(
       DEV_CONFIG.ckb_exchange_timelock.typeHash,
@@ -103,30 +94,26 @@ export class ExchangeLockSingleTx {
         .slice(0, 42),
       HashType.type
     );
-    const toAddr = Address.fromLockScript(timeLockScript);
 
-    const witnessArgs = {
-      lock: exchangeLock.serialize().serializeJson(),
-      input_type: '',
-      output_type: '',
-    };
-    this.builder = new ExchangeLockSingleTxBuilder(
-      fromAddr,
-      toAddr,
-      fee,
-      amount,
-      witnessArgs,
-      feeRate,
-      collector
-    );
+    const inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
+    let outputCell = new Cell(inputCell.capacity,timeLockScript,inputCell.type);
 
-    this.signer = new ExchangeLockSigner(
-      fromAddr,
+    const signer = new ExchangeLockSigner(
+      inputCell.lock.toHash(),
       singlePrivateKey,
       multiPrivateKey,
       exchangeLock,
       new Blake2bHasher()
     );
+
+    const builder = new ExchangeLockSingleTxBuilder(
+      inputCell,
+      outputCell,
+      exchangeLock,
+      env
+    );
+
+    return new ExchangeLockSingleTx(rpc, builder, signer);
   }
 
   async send(): Promise<string> {
@@ -134,8 +121,9 @@ export class ExchangeLockSingleTx {
 
     let sign_tx = await this.signer.sign(tx);
     console.log(JSON.stringify(sign_tx, null, 2));
-
+    sign_tx = sign_tx.validate();
     let transform = transformers.TransformTransaction(sign_tx);
+    console.log(JSON.stringify(transform, null, 2));
     let txHash = this._rpc.send_transaction(transform);
     return txHash;
   }

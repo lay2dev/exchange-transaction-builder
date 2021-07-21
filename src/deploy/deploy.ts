@@ -57,7 +57,7 @@ export const devChainConfig = {
     cellDep: new CellDep(
       DepType.depGroup,
       new OutPoint(
-        '0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37',
+        '0x169094447e4205f82dd5aebd8e0f41c9f3cc2b04fad83ef6deb2873aa5c36763',
         '0x0'
       )
     ),

@@ -2,8 +2,10 @@ import {
   Address,
   Amount,
   Blake2bHasher,
+  Cell,
   Collector,
   HashType,
+  OutPoint,
   Reader,
   RPC,
   Script,
@@ -15,25 +17,29 @@ import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockSigner} from '../signer/time-lock-signer';
 // import {ExchangeLockProvider} from './provider';
-import {DEV_CONFIG, } from '../config';
+import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
+import {CKBEnv} from '../helpers';
 
 export class TimeLockMultiTx {
-  private _rpc: RPC;
-  private builder: TimeLockMultiTxBuilder;
-  private signer: TimeLockSigner;
-
   constructor(
-    fee: Amount = Amount.ZERO,
-    amount: Amount,
+    private _rpc: RPC,
+    private builder: TimeLockMultiTxBuilder,
+    private signer: TimeLockSigner
+  ) {}
+
+  static async create(
+    fromOutPoint: OutPoint,
+    adminLockScript: Script,
+    userLockScript: Script,
     threshold: number,
     requestFirstN: number,
     singlePrivateKey: string,
     multiPrivateKey: Array<string>,
-    nodeUrl: string,
-    feeRate?: number,
-    collector?: Collector
-  ) {
-    this._rpc = new RPC(nodeUrl);
+    env: CKBEnv = CKBEnv.testnet
+  ): Promise<TimeLockMultiTx> {
+    const nodeUrl =
+      env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    const rpc = new RPC(nodeUrl);
 
     let multiKeyPair = [];
     let multiPubKeyHash = [];
@@ -58,78 +64,43 @@ export class TimeLockMultiTx {
         .slice(0, 20)
     );
 
-    const toLock = new ExchangeLock(
-      new ExchangeLockArgs(
-        threshold,
-        requestFirstN,
-        singlePubKeyHash,
-        multiPubKeyHash
-      ),
-      1,
-      []
-    );
+    const userLockScriptHash = new Reader(userLockScript.toHash().slice(0, 42));
 
-    let toLockScript = new Script(
-      DEV_CONFIG.ckb_exchange_lock.typeHash,
-      new Blake2bHasher()
-        .hash(toLock.args.serialize())
-        .serializeJson()
-        .slice(0, 42),
-      HashType.type
-    );
-
-    let toAddr = Address.fromLockScript(toLockScript);
-
-    const toLockScriptHash = new Reader(
-      toLockScript.toHash().slice(0, 42)
-    );
-    const fromLock = new TimeLock(
-      1,
+    const timeLock = new TimeLock(
+      0,
       new TimeLockArgs(
         threshold,
         requestFirstN,
         multiPubKeyHash,
         singlePubKeyHash,
-        toLockScriptHash
+        userLockScriptHash
       ),
       []
     );
 
-    const fromLockArgs = new Blake2bHasher()
-      .update(fromLock.args.serialize().toArrayBuffer())
-      .digest()
-      .serializeJson()
-      .slice(0, 42);
-
-    let fromLockScript = new Script(
-      DEV_CONFIG.ckb_exchange_timelock.typeHash,
-      fromLockArgs,
-      HashType.type
-    );
-    const fromAddr = Address.fromLockScript(fromLockScript);
-
-    const witnessArgs = {
-      lock: fromLock.serialize().serializeJson(),
-      input_type: '',
-      output_type: '',
-    };
-    this.builder = new TimeLockMultiTxBuilder(
-      fromAddr,
-      toAddr,
-      fee,
-      amount,
-      witnessArgs,
-      feeRate,
-      collector
+    let inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
+    let outputCell = new Cell(
+      inputCell.capacity,
+      adminLockScript,
+      inputCell.type
     );
 
-    this.signer = new TimeLockSigner(
-      fromAddr,
+    const signer = new TimeLockSigner(
+      inputCell.lock.toHash(),
       singlePrivateKey,
       multiPrivateKey,
-      fromLock,
+      timeLock,
       new Blake2bHasher()
     );
+
+    const builder = new TimeLockMultiTxBuilder(
+      inputCell,
+      outputCell,
+      timeLock,
+      env
+    );
+
+    return new TimeLockMultiTx(rpc, builder, signer);
   }
 
   async send(): Promise<string> {
@@ -137,6 +108,7 @@ export class TimeLockMultiTx {
 
     let sign_tx = await this.signer.sign(tx);
     console.log(JSON.stringify(sign_tx, null, 2));
+    sign_tx = sign_tx.validate();
 
     let transform = transformers.TransformTransaction(sign_tx);
     let txHash = this._rpc.send_transaction(transform);

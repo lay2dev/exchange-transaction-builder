@@ -2,8 +2,10 @@ import {
   Address,
   Amount,
   Blake2bHasher,
+  Cell,
   Collector,
   HashType,
+  OutPoint,
   Reader,
   RPC,
   Script,
@@ -13,28 +15,28 @@ import {ExchangeLockMultiTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 // import {ExchangeLockProvider} from './provider';
-import {DEV_CONFIG, TESTNET_CONFIG, } from '../config';
+import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
 import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
-import { CKBEnv } from '../helpers';
+import {CKBEnv} from '../helpers';
 
 export class ExchangeLockMultiTx {
-  private _rpc: RPC;
-  private builder: ExchangeLockMultiTxBuilder;
-  private signer: ExchangeLockSigner;
-
   constructor(
-    fee: Amount = Amount.ZERO,
-    amount: Amount,
+    private _rpc: RPC,
+    private builder: ExchangeLockMultiTxBuilder,
+    private signer: ExchangeLockSigner
+  ) {}
+  static async create(
+    fromOutPoint: OutPoint,
+    adminLockScript: Script,
     threshold: number,
     requestFirstN: number,
     singlePrivateKey: string,
     multiPrivateKey: Array<string>,
-    env: CKBEnv,
-    feeRate?: number,
-    collector?: Collector
-  ) {
-    const nodeUrl = env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
-    this._rpc = new RPC(nodeUrl);
+    env: CKBEnv = CKBEnv.testnet
+  ): Promise<ExchangeLockMultiTx> {
+    const nodeUrl =
+      env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    const rpc = new RPC(nodeUrl);
 
     let multiKeyPair = [];
     let multiPubKeyHash = [];
@@ -59,7 +61,7 @@ export class ExchangeLockMultiTx {
         .slice(0, 20)
     );
 
-    const fromLock = new ExchangeLock(
+    let exchangeLock = new ExchangeLock(
       new ExchangeLockArgs(
         threshold,
         requestFirstN,
@@ -70,63 +72,27 @@ export class ExchangeLockMultiTx {
       []
     );
 
-    const fromLockArgs = new Blake2bHasher()
-      .update(fromLock.args.serialize().toArrayBuffer())
-      .digest()
-      .serializeJson()
-      .slice(0, 42);
 
-    let fromLockScript = new Script(
-      DEV_CONFIG.ckb_exchange_lock.typeHash,
-      fromLockArgs,
-      HashType.type
-    );
-    const fromAddr = Address.fromLockScript(fromLockScript);
+    const inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
+    let outputCell = inputCell.clone();
+    outputCell.lock = adminLockScript;
 
-    const toLock = new ExchangeLock(
-      new ExchangeLockArgs(
-        threshold,
-        requestFirstN,
-        singlePubKeyHash,
-        multiPubKeyHash
-      ),
-      1,
-      []
-    );
-
-    let toLockScript = new Script(
-      DEV_CONFIG.ckb_exchange_lock.typeHash,
-      new Blake2bHasher()
-        .hash(toLock.args.serialize())
-        .serializeJson()
-        .slice(0, 42),
-      HashType.type
-    );
-
-    let toAddr = Address.fromLockScript(toLockScript);
-
-    const witnessArgs = {
-      lock: fromLock.serialize().serializeJson(),
-      input_type: '',
-      output_type: '',
-    };
-    this.builder = new ExchangeLockMultiTxBuilder(
-      fromAddr,
-      toAddr,
-      fee,
-      amount,
-      witnessArgs,
-      feeRate,
-      collector
-    );
-
-    this.signer = new ExchangeLockSigner(
-      fromAddr,
+    const signer = new ExchangeLockSigner(
+      inputCell.lock.toHash(),
       singlePrivateKey,
       multiPrivateKey,
-      fromLock,
+      exchangeLock.clone(),
       new Blake2bHasher()
     );
+
+    const builder = new ExchangeLockMultiTxBuilder(
+      inputCell,
+      outputCell,
+      exchangeLock,
+      env
+    );
+
+    return await new ExchangeLockMultiTx(rpc, builder, signer);
   }
 
   async send(): Promise<string> {
@@ -134,6 +100,8 @@ export class ExchangeLockMultiTx {
 
     let sign_tx = await this.signer.sign(tx);
     console.log(JSON.stringify(sign_tx, null, 2));
+    sign_tx = sign_tx.validate();
+
 
     let transform = transformers.TransformTransaction(sign_tx);
     let txHash = this._rpc.send_transaction(transform);
