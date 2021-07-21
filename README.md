@@ -3,13 +3,7 @@ Exchange-transaction-builder is used for building `ckb` transaction about `excha
 
 The process is:
 
-```mermaid
-graph LR;
-ExchangeLock --> |ExchangeLockSingleTx|ExchangeTimeLock;
-ExchangeTimeLock --> |ExchangeTimeLockSingleTx|UserLock;
-ExchangeTimeLock --> |ExchangeTimeLockMultiTx|AdminLock;
-ExchangeLock --> |ExchangeLockMultiTx|AdminLock;
-```
+![exchange-transaction-builder](images/exchange-transaction-builder.png)
 
 ## Quick Start
 
