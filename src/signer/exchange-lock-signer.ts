@@ -3,12 +3,14 @@ import {
   Signer,
   Keccak256Hasher,
   Reader,
-  Address,
   Hasher,
 } from '@lay2/pw-core';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLock} from '../types/ckb-exchange-lock';
 
+/**
+ * The signer for `ExchangeLock`
+ */
 export class ExchangeLockSigner extends Signer {
   private singleKeyPair: ECPair;
   private multiKeyPair: Array<ECPair>;
@@ -30,13 +32,18 @@ export class ExchangeLockSigner extends Signer {
     }
   }
 
+  /**
+   *
+   * @param messages Signing message
+   * @returns Signed witnessArgs's lock
+   */
   async signMessages(messages: Message[]): Promise<string[]> {
     const witnessLocks = [];
     var prefix = Buffer.from(
       '\u0019Ethereum Signed Message:\n' + '32',
       'utf-8'
     );
-    
+
     for (const message of messages) {
       if (this.fromLockHash === message.lock.toHash()) {
         console.log('message:', message.message);

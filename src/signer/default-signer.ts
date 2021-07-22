@@ -1,4 +1,4 @@
-import { Address, Hasher, Message, Signer } from "@lay2/pw-core";
+import { Hasher, Message, Signer } from "@lay2/pw-core";
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 
 export class DefaultSigner extends Signer {

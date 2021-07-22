@@ -3,15 +3,15 @@ import {
   Transaction,
   Cell,
   RawTransaction,
-  WitnessArgs,
-  AmountUnit,
-  Amount,
   Reader,
 } from '@lay2/pw-core';
 
 import { CellDepType, CKBEnv, getCellDep } from '../helpers';
 import { ExchangeLock } from '../types/ckb-exchange-lock';
 
+/**
+ * Builder for `ExchangeLockSingleTx`
+ */
 export class ExchangeLockSingleTxBuilder extends Builder {
   constructor(
     private inputCell: Cell,
@@ -22,6 +22,10 @@ export class ExchangeLockSingleTxBuilder extends Builder {
     super();
   }
 
+  /**
+   * Build ExchangeLockSingleTx
+   * @returns ExchangeLockSingleTx
+   */
   async build(): Promise<Transaction> {
     this.exchangeLock.signature = [new Reader("0x" + "0".repeat(130))];
     const calWitnessArgs = {

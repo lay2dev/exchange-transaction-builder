@@ -1,10 +1,6 @@
 import {
-  Address,
-  Amount,
   Blake2bHasher,
   Cell,
-  Collector,
-  HashType,
   OutPoint,
   Reader,
   RPC,
@@ -14,17 +10,31 @@ import {
 import {ExchangeLockMultiTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-// import {ExchangeLockProvider} from './provider';
 import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
 import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
 import {CKBEnv} from '../helpers';
 
+/**
+ * The object that combine `ExchangeLockMultiTx`'s builder, signer and deployment.
+ */
 export class ExchangeLockMultiTx {
   constructor(
     private _rpc: RPC,
     private builder: ExchangeLockMultiTxBuilder,
     private signer: ExchangeLockSigner
   ) {}
+
+  /**
+   * create ExchangeLockMultiTx
+   * @param fromOutPoint The `outpoint` where `NFT` from.
+   * @param adminLockScript The `lock script` of admin address,where nft finally to,uses multiple signature
+   * @param threshold The `threshole` from `ExchangeLock`'s multiple signature 
+   * @param requestFirstN The first nth public keys must match,which from `ExchangeLock`'s multiple signature 
+   * @param singlePrivateKey The private key for `ExchagneLock`'s single signature
+   * @param multiPrivateKey The private keys for `ExchangeLock`'s multiple signature
+   * @param env The running enviment.One of `dev`,`testnet`
+   * @returns ExchangeLockMultiTx
+   */
   static async create(
     fromOutPoint: OutPoint,
     adminLockScript: Script,
@@ -95,6 +105,10 @@ export class ExchangeLockMultiTx {
     return await new ExchangeLockMultiTx(rpc, builder, signer);
   }
 
+  /**
+   * deploy `ExchangeLockMultiTx`
+   * @returns The transaction hash
+   */
   async send(): Promise<string> {
     const tx = await this.builder.build();
 

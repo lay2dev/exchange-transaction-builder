@@ -1,24 +1,16 @@
 import {
-  Address,
-  Amount,
-  AmountUnit,
   Builder,
   Transaction,
   Cell,
-  Collector,
   RawTransaction,
-  WitnessArgs,
-  IndexerCollector,
-  CellDep,
-  DepType,
-  OutPoint,
   Reader,
 } from '@lay2/pw-core';
-import {DEV_CONFIG} from '../config';
-import {devChainConfig} from '../deploy/deploy';
 import {CellDepType, CKBEnv, getCellDep} from '../helpers';
 import {TimeLock} from '../types/ckb-exchange-timelock';
 
+/**
+ * Builder for `ExchangeTimeLocMultiTx`
+ */
 export class TimeLockMultiTxBuilder extends Builder {
   constructor(
     private inputCell: Cell,
@@ -29,6 +21,10 @@ export class TimeLockMultiTxBuilder extends Builder {
     super();
   }
 
+  /**
+   * Build ExchangeTimeLocMultiTx
+   * @returns ExchangeTimeLocMultiTx
+   */
   async build(): Promise<Transaction> {
     for (let _i in this.timeLock.args.multi_pubkey) {
       this.timeLock.signature.push(new Reader('0x' + '0'.repeat(130)));

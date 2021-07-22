@@ -3,12 +3,14 @@ import {
   Signer,
   Keccak256Hasher,
   Reader,
-  Address,
   Hasher,
 } from '@lay2/pw-core';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLock} from '../types/ckb-exchange-timelock';
 
+/**
+ * The signer for `ExchangeTimeLock`
+ */
 export class TimeLockSigner extends Signer {
   private singleKeyPair: ECPair;
   private multiKeyPair: Array<ECPair>;
@@ -30,6 +32,11 @@ export class TimeLockSigner extends Signer {
     }
   }
 
+  /**
+   * 
+   * @param messages Signing message
+   * @returns Signed witnessArgs's lock
+   */
   async signMessages(messages: Message[]): Promise<string[]> {
     const witnessLocks = [];
     var prefix = Buffer.from(

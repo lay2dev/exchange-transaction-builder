@@ -1,26 +1,16 @@
 import {
-  Address,
-  Amount,
-  AmountUnit,
   Builder,
   Transaction,
   Cell,
-  Collector,
   RawTransaction,
-  WitnessArgs,
-  IndexerCollector,
-  CellDep,
-  DepType,
-  OutPoint,
   Reader,
 } from '@lay2/pw-core';
-import {
-  DEV_CONFIG,
-} from '../config';
-import {devChainConfig} from '../deploy/deploy';
 import { CellDepType, CKBEnv, getCellDep } from '../helpers';
 import { TimeLock } from '../types/ckb-exchange-timelock';
 
+/**
+ * Builder for `ExchangeTimeLocSingleTx`
+ */
 export class TimeLockSingleTxBuilder extends Builder {
   constructor(
     private inputCell: Cell,
@@ -31,6 +21,10 @@ export class TimeLockSingleTxBuilder extends Builder {
     super();
   }
 
+  /**
+   * Build ExchangeTimeLocSingleTx
+   * @returns ExchangeTimeLocSingleTx
+   */
   async build(): Promise<Transaction> {
     this.timeLock.signature = [new Reader("0x" + "0".repeat(130))];
     const calWitnessArgs = {

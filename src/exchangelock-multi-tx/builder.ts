@@ -3,15 +3,14 @@ import {
   Transaction,
   Cell,
   RawTransaction,
-  WitnessArgs,
-  OutPoint,
-  RPC,
-  Script,
   Reader,
 } from '@lay2/pw-core';
 import {CellDepType, CKBEnv, getCellDep} from '../helpers';
 import { ExchangeLock } from '../types/ckb-exchange-lock';
 
+/**
+ * Builder for `ExchangeLockMultiTx`
+ */
 export class ExchangeLockMultiTxBuilder extends Builder {
   constructor(
     private inputCell: Cell,
@@ -21,7 +20,10 @@ export class ExchangeLockMultiTxBuilder extends Builder {
   ) {
     super();
   }
-
+  /**
+   * Build ExchangeLockMultiTx
+   * @returns ExchangeLockMultiTx
+   */
   async build(): Promise<Transaction> {
     for (let _i in this.exchangeLock.args.multi_pubkey){
       this.exchangeLock.signature.push(new Reader('0x' + '0'.repeat(130)));

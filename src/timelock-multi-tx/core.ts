@@ -20,6 +20,9 @@ import {TimeLockSigner} from '../signer/time-lock-signer';
 import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
 import {CKBEnv} from '../helpers';
 
+/**
+ * The object that combine `ExchangeTimeLockMultiTx`'s builder, signer and deployment.
+ */
 export class TimeLockMultiTx {
   constructor(
     private _rpc: RPC,
@@ -27,6 +30,18 @@ export class TimeLockMultiTx {
     private signer: TimeLockSigner
   ) {}
 
+  /**
+   * create ExchangeTimeLockMultiTx
+   * @param fromOutPoint The `outpoint` where `NFT` from.
+   * @param adminLockScript The `lock script` of admin address,where nft finally to,uses multiple signature
+   * @param userLockScript  The `lock script` of user address,where nft finally to,uses single signature
+   * @param threshold The `threshole` from `ExchagneTimeLock`'s multiple signature 
+   * @param requestFirstN The first nth public keys must match,which from `ExchagneTimeLock`'s multiple signature 
+   * @param singlePrivateKey The private key for `ExchagneTimeLock`'s single signature
+   * @param multiPrivateKey The private keys for `ExchagneTimeLock`'s multiple signature
+   * @param env The running enviment.One of `dev`,`testnet`
+   * @returns ExchangeTimeLockMultiTx
+   */
   static async create(
     fromOutPoint: OutPoint,
     adminLockScript: Script,
@@ -100,6 +115,11 @@ export class TimeLockMultiTx {
     return new TimeLockMultiTx(rpc, builder, signer);
   }
 
+
+  /**
+   * deploy `ExchangeTimeLockMultiTx`
+   * @returns The transaction hash
+   */
   async send(): Promise<string> {
     const tx = await this.builder.build();
 

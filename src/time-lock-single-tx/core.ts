@@ -1,10 +1,6 @@
 import {
-  Address,
-  Amount,
   Blake2bHasher,
   Cell,
-  Collector,
-  HashType,
   OutPoint,
   Reader,
   RPC,
@@ -12,21 +8,33 @@ import {
   transformers,
 } from '@lay2/pw-core';
 import {TimeLockSingleTxBuilder} from './builder';
-import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockSigner} from '../signer/time-lock-signer';
-// import {ExchangeLockProvider} from './provider';
 import {DEV_CONFIG, TESTNET_CONFIG, } from '../config';
 import { CKBEnv } from '../helpers';
 
+/**
+ * The object that combine `ExchangeTimeLockSingleTx`'s builder, signer and deployment.
+ */
 export class TimeLockSingleTx {
-
   constructor(
     private readonly _rpc: RPC,
     private builder: TimeLockSingleTxBuilder,
     private signer: TimeLockSigner
   ) {}
+
+  /**
+   * create ExchangeTimeLockSingleTx
+   * @param fromOutPoint The `outpoint` where `NFT` from.
+   * @param userLockScript The `lock script` of user address,where nft finally to,uses single signature
+   * @param threshold The `threshole` from `ExchagneTimeLock`'s multiple signature 
+   * @param requestFirstN The first nth public keys must match,which from `ExchagneTimeLock`'s multiple signature 
+   * @param singlePrivateKey The private key for `ExchagneTimeLock`'s single signature
+   * @param multiPrivateKey The private keys for `ExchagneTimeLock`'s multiple signature
+   * @param env The running enviment.One of `dev`,`testnet`
+   * @returns ExchangeTimeLockSingleTx
+   */
   static async create(
     fromOutPoint: OutPoint,
     userLockScript:Script,

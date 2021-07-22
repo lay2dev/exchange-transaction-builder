@@ -1,9 +1,6 @@
 import {
-  Address,
-  Amount,
   Blake2bHasher,
   Cell,
-  Collector,
   HashType,
   OutPoint,
   Reader,
@@ -13,20 +10,33 @@ import {
 } from '@lay2/pw-core';
 import {ExchangeLockSingleTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
-import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
+import {TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
-// import {ExchangeLockProvider} from './provider';
 import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
 import {CKBEnv} from '../helpers';
-import {getConstantValue} from 'typescript';
 
+/**
+ * The object that combine `ExchangeLockSingleTx`'s builder, signer and deployment.
+ */
 export class ExchangeLockSingleTx {
   constructor(
     private readonly _rpc: RPC,
     private builder: ExchangeLockSingleTxBuilder,
     private signer: ExchangeLockSigner
   ) {}
+  
+  /**
+   * create ExchangeLockSingleTx
+   * @param fromOutPoint The `outpoint` where `NFT` from.
+   * @param userLockScript The `lock script` of user address,where nft finally to,uses single signature
+   * @param threshold The `threshole` from `ExchangeLock`'s multiple signature 
+   * @param requestFirstN The first nth public keys must match,which from `ExchangeLock`'s multiple signature 
+   * @param singlePrivateKey The private key for `ExchagneLock`'s single signature
+   * @param multiPrivateKey The private keys for `ExchangeLock`'s multiple signature
+   * @param env The running enviment.One of `dev`,`testnet`
+   * @returns ExchangeLockSingleTx
+   */
   static async create(
     fromOutPoint: OutPoint,
     userLockScript: Script,
@@ -115,6 +125,10 @@ export class ExchangeLockSingleTx {
     return new ExchangeLockSingleTx(rpc, builder, signer);
   }
 
+  /**
+   * deploy `ExchangeLockSingleTx`
+   * @returns The transaction hash
+   */
   async send(): Promise<string> {
     const tx = await this.builder.build();
 
