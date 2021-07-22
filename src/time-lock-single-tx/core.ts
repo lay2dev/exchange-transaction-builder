@@ -53,7 +53,7 @@ export class TimeLockSingleTx {
       multiPubKeyHash.push(
         new Reader(
           new Blake2bHasher()
-            .hash(pubKey)
+            .hash(new Reader(pubKey))
             .toArrayBuffer()
             .slice(0, 20)
         )
