@@ -1,10 +1,6 @@
 import {
-  Address,
-  Amount,
   Blake2bHasher,
   Cell,
-  Collector,
-  HashType,
   OutPoint,
   Reader,
   RPC,
@@ -12,11 +8,9 @@ import {
   transformers,
 } from '@lay2/pw-core';
 import {TimeLockMultiTxBuilder} from './builder';
-import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockSigner} from '../signer/time-lock-signer';
-// import {ExchangeLockProvider} from './provider';
 import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
 import {CKBEnv} from '../helpers';
 
