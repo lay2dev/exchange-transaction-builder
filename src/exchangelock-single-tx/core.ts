@@ -12,7 +12,7 @@ import {ExchangeLockSingleTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import {TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
+import {ExchangeLockSingleSigner} from '../signer/exchange-lock-signer';
 import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
 import {CKBEnv} from '../helpers';
 
@@ -23,7 +23,7 @@ export class ExchangeLockSingleTx {
   constructor(
     private readonly _rpc: RPC,
     private builder: ExchangeLockSingleTxBuilder,
-    private signer: ExchangeLockSigner
+    private signer: ExchangeLockSingleSigner
   ) {}
   
   /**
@@ -33,7 +33,7 @@ export class ExchangeLockSingleTx {
    * @param threshold The `threshole` from `ExchangeLock`'s multiple signature 
    * @param requestFirstN The first nth public keys must match,which from `ExchangeLock`'s multiple signature 
    * @param singlePrivateKey The private key for `ExchagneLock`'s single signature
-   * @param multiPrivateKey The private keys for `ExchangeLock`'s multiple signature
+   * @param multiPubKey The public keys for `ExchangeLock`'s multiple signature
    * @param env The running enviment.One of `dev`,`testnet`
    * @returns ExchangeLockSingleTx
    */
@@ -43,22 +43,19 @@ export class ExchangeLockSingleTx {
     threshold: number,
     requestFirstN: number,
     singlePrivateKey: string,
-    multiPrivateKey: Array<string>,
+    multiPubKey: Array<string>,
     env: CKBEnv = CKBEnv.testnet
   ): Promise<ExchangeLockSingleTx> {
     const nodeUrl =
       env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
     const rpc = new RPC(nodeUrl);
 
-    let multiKeyPair = [];
     let multiPubKeyHash = [];
-    for (let privateKey of multiPrivateKey) {
-      let keyPair = new ECPair(privateKey);
-      multiKeyPair.push(keyPair);
+    for (let pubkey of multiPubKey) {
       multiPubKeyHash.push(
         new Reader(
           new Blake2bHasher()
-            .hash(new Reader(keyPair.publicKey))
+            .hash(new Reader(pubkey))
             .toArrayBuffer()
             .slice(0, 20)
         )
@@ -107,10 +104,9 @@ export class ExchangeLockSingleTx {
     let outputCell = inputCell.clone();
     outputCell.lock = timeLockScript;
 
-    const signer = new ExchangeLockSigner(
+    const signer = new ExchangeLockSingleSigner(
       inputCell.lock.toHash(),
       singlePrivateKey,
-      multiPrivateKey,
       exchangeLock,
       new Blake2bHasher()
     );

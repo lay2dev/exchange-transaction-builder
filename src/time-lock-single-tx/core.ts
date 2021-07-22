@@ -10,7 +10,7 @@ import {
 import {TimeLockSingleTxBuilder} from './builder';
 import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {TimeLockSigner} from '../signer/time-lock-signer';
+import {TimeLockSingleSigner} from '../signer/time-lock-signer';
 import {DEV_CONFIG, TESTNET_CONFIG, } from '../config';
 import { CKBEnv } from '../helpers';
 
@@ -21,7 +21,7 @@ export class TimeLockSingleTx {
   constructor(
     private readonly _rpc: RPC,
     private builder: TimeLockSingleTxBuilder,
-    private signer: TimeLockSigner
+    private signer: TimeLockSingleSigner
   ) {}
 
   /**
@@ -31,7 +31,7 @@ export class TimeLockSingleTx {
    * @param threshold The `threshole` from `ExchagneTimeLock`'s multiple signature 
    * @param requestFirstN The first nth public keys must match,which from `ExchagneTimeLock`'s multiple signature 
    * @param singlePrivateKey The private key for `ExchagneTimeLock`'s single signature
-   * @param multiPrivateKey The private keys for `ExchagneTimeLock`'s multiple signature
+   * @param multiPubKey The public keys for `ExchagneTimeLock`'s multiple signature
    * @param env The running enviment.One of `dev`,`testnet`
    * @returns ExchangeTimeLockSingleTx
    */
@@ -41,22 +41,19 @@ export class TimeLockSingleTx {
     threshold: number,
     requestFirstN: number,
     singlePrivateKey: string,
-    multiPrivateKey: Array<string>,
+    multiPubKey: Array<string>,
     env: CKBEnv = CKBEnv.testnet
   ):Promise<TimeLockSingleTx> {
     const nodeUrl =
       env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
     const rpc = new RPC(nodeUrl);
 
-    let multiKeyPair = [];
     let multiPubKeyHash = [];
-    for (let privateKey of multiPrivateKey) {
-      let keyPair = new ECPair(privateKey);
-      multiKeyPair.push(keyPair);
+    for (let pubKey of multiPubKey) {
       multiPubKeyHash.push(
         new Reader(
           new Blake2bHasher()
-            .hash(new Reader(keyPair.publicKey))
+            .hash(pubKey)
             .toArrayBuffer()
             .slice(0, 20)
         )
@@ -91,10 +88,9 @@ export class TimeLockSingleTx {
     let outputCell = inputCell.clone();
     outputCell.lock = userLockScript;
 
-    const signer = new TimeLockSigner(
+    const signer = new TimeLockSingleSigner(
       inputCell.lock.toHash(),
       singlePrivateKey,
-      multiPrivateKey,
       timeLock,
       new Blake2bHasher()
     );

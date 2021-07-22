@@ -46,7 +46,7 @@ const tx = await ExchangeLockSingleTx.create(   //create ExchangeLockSingleTx
     threshold:number,                       //threshold for multiple signature               
     requestFirstN:number,                   //first nth public keys must match,for multiple signature
     singleSignPrivateKey:string,            //private key for single signature
-    multiSignPrivateKey:string[],           //private keys for multiple signature
+    multiPubKey:string[],                   //public keys for multiple signature
     env:CKBEnv,                             //run environment:One of `dev`,`testnet`
 );
 const txHash = await tx.send();             //deploy transaction
@@ -64,7 +64,7 @@ const tx = await ExchangeLockMultiTx.create(   //create ExchangeLockSingleTx
     adminLockScript:Script,                  //lock script from Admin Lock                            
     threshold:number,                       //threshold for multiple signature               
     requestFirstN:number,                   //first nth public keys must match,for multiple signature
-    singleSignPrivateKey:string,            //private key for single signature
+    singlePubKey:string,                    //single key for single signature
     multiSignPrivateKey:string[],           //private keys for multiple signature
     env:CKBEnv,                             //run environment:One of `dev`,`testnet`
 );
@@ -85,7 +85,7 @@ const tx = await TimeLockSingleTx.create(   //create ExchangeTimeLockSingleTx
     threshold:number,                       //threshold for multiple signature               
     requestFirstN:number,                   //first nth public keys must match,for multiple signature
     singleSignPrivateKey:string,            //private key for single signature
-    multiSignPrivateKey:string[],           //private keys for multiple signature
+    multiPubKey:string[],                   //public keys for multiple signature
     env:CKBEnv,                             //run environment:One of `dev`,`testnet`
 );
 const txHash = await tx.send();             //deploy transaction
@@ -105,7 +105,7 @@ const tx = await TimeLockMultiTx.create(   //create ExchangeTimeLockMultiTx
     userLockScript:Script,                  //lock script from User Lock                            
     threshold:number,                       //threshold for multiple signature               
     requestFirstN:number,                   //first nth public keys must match,for multiple signature
-    singleSignPrivateKey:string,            //private key for single signature
+    singlePubKey:string,                    //public key for single signature
     multiSignPrivateKey:string[],           //private keys for multiple signature
     env:CKBEnv,                             //run environment:One of `dev`,`testnet`
 );

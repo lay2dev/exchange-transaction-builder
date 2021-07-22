@@ -10,7 +10,7 @@ import {
 import {TimeLockMultiTxBuilder} from './builder';
 import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {TimeLockSigner} from '../signer/time-lock-signer';
+import {TimeLockMultiSigner} from '../signer/time-lock-signer';
 import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
 import {CKBEnv} from '../helpers';
 
@@ -21,7 +21,7 @@ export class TimeLockMultiTx {
   constructor(
     private _rpc: RPC,
     private builder: TimeLockMultiTxBuilder,
-    private signer: TimeLockSigner
+    private signer: TimeLockMultiSigner
   ) {}
 
   /**
@@ -31,7 +31,7 @@ export class TimeLockMultiTx {
    * @param userLockScript  The `lock script` of user address,where nft finally to,uses single signature
    * @param threshold The `threshole` from `ExchagneTimeLock`'s multiple signature 
    * @param requestFirstN The first nth public keys must match,which from `ExchagneTimeLock`'s multiple signature 
-   * @param singlePrivateKey The private key for `ExchagneTimeLock`'s single signature
+   * @param singlePubKey The public key for `ExchagneTimeLock`'s single signature
    * @param multiPrivateKey The private keys for `ExchagneTimeLock`'s multiple signature
    * @param env The running enviment.One of `dev`,`testnet`
    * @returns ExchangeTimeLockMultiTx
@@ -42,7 +42,7 @@ export class TimeLockMultiTx {
     userLockScript: Script,
     threshold: number,
     requestFirstN: number,
-    singlePrivateKey: string,
+    singlePubKey: string,
     multiPrivateKey: Array<string>,
     env: CKBEnv = CKBEnv.testnet
   ): Promise<TimeLockMultiTx> {
@@ -65,10 +65,9 @@ export class TimeLockMultiTx {
       );
     }
 
-    const singleKeyPair = new ECPair(singlePrivateKey);
     const singlePubKeyHash = new Reader(
       new Blake2bHasher()
-        .hash(new Reader(singleKeyPair.publicKey))
+        .hash(new Reader(singlePubKey))
         .toArrayBuffer()
         .slice(0, 20)
     );
@@ -91,9 +90,8 @@ export class TimeLockMultiTx {
     let outputCell = inputCell.clone();
     outputCell.lock = adminLockScript;
 
-    const signer = new TimeLockSigner(
+    const signer = new TimeLockMultiSigner(
       inputCell.lock.toHash(),
-      singlePrivateKey,
       multiPrivateKey,
       timeLock,
       new Blake2bHasher()

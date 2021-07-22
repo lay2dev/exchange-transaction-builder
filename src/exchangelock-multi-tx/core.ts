@@ -11,7 +11,7 @@ import {ExchangeLockMultiTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
-import {ExchangeLockSigner} from '../signer/exchange-lock-signer';
+import {ExchangeLockMultiSigner} from '../signer/exchange-lock-signer';
 import {CKBEnv} from '../helpers';
 
 /**
@@ -21,7 +21,7 @@ export class ExchangeLockMultiTx {
   constructor(
     private _rpc: RPC,
     private builder: ExchangeLockMultiTxBuilder,
-    private signer: ExchangeLockSigner
+    private signer: ExchangeLockMultiSigner
   ) {}
 
   /**
@@ -30,7 +30,7 @@ export class ExchangeLockMultiTx {
    * @param adminLockScript The `lock script` of admin address,where nft finally to,uses multiple signature
    * @param threshold The `threshole` from `ExchangeLock`'s multiple signature 
    * @param requestFirstN The first nth public keys must match,which from `ExchangeLock`'s multiple signature 
-   * @param singlePrivateKey The private key for `ExchagneLock`'s single signature
+   * @param singlePubKey The public key for `ExchagneLock`'s single signature
    * @param multiPrivateKey The private keys for `ExchangeLock`'s multiple signature
    * @param env The running enviment.One of `dev`,`testnet`
    * @returns ExchangeLockMultiTx
@@ -40,7 +40,7 @@ export class ExchangeLockMultiTx {
     adminLockScript: Script,
     threshold: number,
     requestFirstN: number,
-    singlePrivateKey: string,
+    singlePubKey: string,
     multiPrivateKey: Array<string>,
     env: CKBEnv = CKBEnv.testnet
   ): Promise<ExchangeLockMultiTx> {
@@ -63,10 +63,9 @@ export class ExchangeLockMultiTx {
       );
     }
 
-    const singleKeyPair = new ECPair(singlePrivateKey);
     const singlePubKeyHash = new Reader(
       new Blake2bHasher()
-        .hash(new Reader(singleKeyPair.publicKey))
+        .hash(new Reader(singlePubKey))
         .toArrayBuffer()
         .slice(0, 20)
     );
@@ -87,9 +86,8 @@ export class ExchangeLockMultiTx {
     let outputCell = inputCell.clone();
     outputCell.lock = adminLockScript;
 
-    const signer = new ExchangeLockSigner(
+    const signer = new ExchangeLockMultiSigner(
       inputCell.lock.toHash(),
-      singlePrivateKey,
       multiPrivateKey,
       exchangeLock.clone(),
       new Blake2bHasher()

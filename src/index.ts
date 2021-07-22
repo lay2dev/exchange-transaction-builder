@@ -202,9 +202,11 @@ program
       HashType.type
     );
 
+    let multiPubKey = [];
     let multiPubKeyHash = [];
     for (let privateKey of ACCOUNT_PRIVATE_KEY) {
       let keyPair = new ECPair(privateKey);
+      multiPubKey.push(keyPair.publicKey);
       multiPubKeyHash.push(
         new Reader(
           new Blake2bHasher()
@@ -215,6 +217,14 @@ program
       );
     }
 
+    const singlePubKey = new ECPair(ROOT_PRIVATE_KEY).publicKey;
+    const singlePubKeyHash = new Reader(
+      new Blake2bHasher()
+        .hash(new Reader(singlePubKey))
+        .toArrayBuffer()
+        .slice(0, 20)
+    );
+
     const adminLockScript = new Script(
       options.env == CKBEnv.dev
         ? DEV_CONFIG.ckb_exchange_lock.typeHash
@@ -224,12 +234,7 @@ program
           new ExchangeLockArgs(
             3,
             1,
-            new Reader(
-              new Blake2bHasher()
-                .hash(new Reader(new ECPair(ROOT_PRIVATE_KEY).publicKey))
-                .toArrayBuffer()
-                .slice(0, 20)
-            ),
+            singlePubKeyHash,
             multiPubKeyHash
           ).serialize()
         )
@@ -247,7 +252,7 @@ program
             3,
             1,
             ACCOUNT_PRIVATE_KEY[0],
-            ACCOUNT_PRIVATE_KEY,
+            multiPubKey,
             options.env
           )
         ).send();
@@ -262,7 +267,7 @@ program
             userLockScript,
             3,
             1,
-            ACCOUNT_PRIVATE_KEY[0],
+            singlePubKey,
             ACCOUNT_PRIVATE_KEY,
             options.env
           )
@@ -278,7 +283,7 @@ program
             3,
             1,
             ACCOUNT_PRIVATE_KEY[0],
-            ACCOUNT_PRIVATE_KEY,
+            multiPubKey,
             options.env
           )
         ).send();
@@ -292,7 +297,7 @@ program
             adminLockScript,
             3,
             1,
-            ACCOUNT_PRIVATE_KEY[0],
+            singlePubKey,
             ACCOUNT_PRIVATE_KEY,
             options.env
           )
