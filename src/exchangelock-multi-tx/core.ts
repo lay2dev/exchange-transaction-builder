@@ -10,9 +10,9 @@ import {
 import {ExchangeLockMultiTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {CONFIG} from '../config';
+import {RunningConfig} from '../config';
 import {ExchangeLockMultiSigner} from '../signer/exchange-lock-signer';
-import {CKBEnv} from '../helpers';
+import {CellDepType, CKBEnv, getCellDep} from '../helpers';
 
 /**
  * The object that combine `ExchangeLockMultiTx`'s builder, signer and deployment.
@@ -28,11 +28,11 @@ export class ExchangeLockMultiTx {
    * create ExchangeLockMultiTx
    * @param fromOutPoint The `outpoint` where `NFT` from.
    * @param adminLockScript The `lock script` of admin address,where nft finally to,uses multiple signature
-   * @param threshold The `threshole` from `ExchangeLock`'s multiple signature 
-   * @param requestFirstN The first nth public keys must match,which from `ExchangeLock`'s multiple signature 
+   * @param threshold The `threshole` from `ExchangeLock`'s multiple signature
+   * @param requestFirstN The first nth public keys must match,which from `ExchangeLock`'s multiple signature
    * @param singlePubKey The public key for `ExchagneLock`'s single signature
    * @param multiPrivateKey The private keys for `ExchangeLock`'s multiple signature
-   * @param env The running enviment.One of `dev`,`testnet`
+   * @param cellDeps The cellDeps of the transaction,
    * @returns ExchangeLockMultiTx
    */
   static async create(
@@ -42,11 +42,9 @@ export class ExchangeLockMultiTx {
     requestFirstN: number,
     singlePubKey: string,
     multiPrivateKey: Array<string>,
-    env: CKBEnv = CKBEnv.testnet
+    config: RunningConfig
   ): Promise<ExchangeLockMultiTx> {
-    const nodeUrl =
-      env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
-    const rpc = new RPC(nodeUrl);
+    const rpc = new RPC(config.ckb_url);
 
     let multiKeyPair = [];
     let multiPubKeyHash = [];
@@ -81,7 +79,6 @@ export class ExchangeLockMultiTx {
       []
     );
 
-
     const inputCell = await Cell.loadFromBlockchain(rpc, fromOutPoint);
     let outputCell = inputCell.clone();
     outputCell.lock = adminLockScript;
@@ -97,7 +94,12 @@ export class ExchangeLockMultiTx {
       inputCell,
       outputCell,
       exchangeLock,
-      env
+      [
+        config.getCellDep(CellDepType.ckb_exchange_lock),
+        config.getCellDep(CellDepType.secp256k1_dep_cell),
+        config.getCellDep(CellDepType.secp256k1_lib_dep_cell),
+        config.getCellDep(CellDepType.nft_type),
+      ]
     );
 
     return await new ExchangeLockMultiTx(rpc, builder, signer);
@@ -113,7 +115,6 @@ export class ExchangeLockMultiTx {
     let sign_tx = await this.signer.sign(tx);
     console.log(JSON.stringify(sign_tx, null, 2));
     sign_tx = sign_tx.validate();
-
 
     let transform = transformers.TransformTransaction(sign_tx);
     let txHash = this._rpc.send_transaction(transform);

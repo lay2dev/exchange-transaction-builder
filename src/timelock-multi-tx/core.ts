@@ -12,7 +12,8 @@ import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockMultiSigner} from '../signer/time-lock-signer';
 import {CONFIG} from '../config';
-import {CKBEnv} from '../helpers';
+import {CellDepType, CKBEnv} from '../helpers';
+import {RunningConfig} from '..';
 
 /**
  * The object that combine `ExchangeTimeLockMultiTx`'s builder, signer and deployment.
@@ -29,8 +30,8 @@ export class TimeLockMultiTx {
    * @param fromOutPoint The `outpoint` where `NFT` from.
    * @param adminLockScript The `lock script` of admin address,where nft finally to,uses multiple signature
    * @param userLockScript  The `lock script` of user address,where nft finally to,uses single signature
-   * @param threshold The `threshole` from `ExchagneTimeLock`'s multiple signature 
-   * @param requestFirstN The first nth public keys must match,which from `ExchagneTimeLock`'s multiple signature 
+   * @param threshold The `threshole` from `ExchagneTimeLock`'s multiple signature
+   * @param requestFirstN The first nth public keys must match,which from `ExchagneTimeLock`'s multiple signature
    * @param singlePubKey The public key for `ExchagneTimeLock`'s single signature
    * @param multiPrivateKey The private keys for `ExchagneTimeLock`'s multiple signature
    * @param env The running enviment.One of `dev`,`testnet`
@@ -44,11 +45,9 @@ export class TimeLockMultiTx {
     requestFirstN: number,
     singlePubKey: string,
     multiPrivateKey: Array<string>,
-    env: CKBEnv = CKBEnv.testnet
+    config: RunningConfig
   ): Promise<TimeLockMultiTx> {
-    const nodeUrl =
-      env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
-    const rpc = new RPC(nodeUrl);
+    const rpc = new RPC(config.ckb_url);
 
     let multiKeyPair = [];
     let multiPubKeyHash = [];
@@ -101,12 +100,16 @@ export class TimeLockMultiTx {
       inputCell,
       outputCell,
       timeLock,
-      env
+      [
+        config.getCellDep(CellDepType.ckb_exchange_timelock),
+        config.getCellDep(CellDepType.secp256k1_dep_cell),
+        config.getCellDep(CellDepType.secp256k1_lib_dep_cell),
+        config.getCellDep(CellDepType.nft_type),
+      ]
     );
 
     return new TimeLockMultiTx(rpc, builder, signer);
   }
-
 
   /**
    * deploy `ExchangeTimeLockMultiTx`

@@ -1,5 +1,5 @@
 import {Address, Blake2bHasher, HashType, Reader, Script} from '@lay2/pw-core';
-import {CONFIG} from '../config';
+import {ExchangeLock, RunningConfig, SignFlag} from '..';
 import {ExchangeLockArgs} from '../types/ckb-exchange-lock';
 
 /**
@@ -8,9 +8,9 @@ import {ExchangeLockArgs} from '../types/ckb-exchange-lock';
 export class ExchangeLockAddr {
   address: Address;
   /**
-   * 
-   * @param threshold 
-   * @param requestFirstN The `threshole` from `ExchangeLock`'s multiple signature 
+   *
+   * @param threshold
+   * @param requestFirstN The `threshole` from `ExchangeLock`'s multiple signature
    * @param singlePubKey The public key for `ExchagneLock`'s single signature
    * @param multiPubKey The private keys for `ExchangeLock`'s multiple signature
    */
@@ -18,7 +18,9 @@ export class ExchangeLockAddr {
     threshold: number,
     requestFirstN: number,
     singlePubKey: string,
-    multiPubKey: Array<string>
+    multiPubKey: Array<string>,
+    signFlag: SignFlag,
+    config: RunningConfig
   ) {
     let multiPubKeyHash = [];
     for (let pubKey of multiPubKey) {
@@ -39,7 +41,7 @@ export class ExchangeLockAddr {
         .slice(0, 20)
     );
 
-    const exchangeLockCodeHash = CONFIG.devConfig.ckbExchangeLock.typeHash;
+    const exchangeLockCodeHash = config.ckbExchangeLock.typeHash;
 
     const exchangeLockArgs = new ExchangeLockArgs(
       threshold,
@@ -50,7 +52,10 @@ export class ExchangeLockAddr {
 
     let exchangeLockScript = new Script(
       exchangeLockCodeHash,
-      exchangeLockArgs.serialize().serializeJson(),
+      new Blake2bHasher()
+        .hash(exchangeLockArgs.serialize())
+        .serializeJson()
+        .slice(0, 42),
       HashType.type
     );
     let addr = Address.fromLockScript(exchangeLockScript);

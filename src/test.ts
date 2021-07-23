@@ -22,14 +22,12 @@ import {TimeLockSingleTx} from './time-lock-single-tx/core';
 
 import {Command} from 'commander';
 import {readFileSync} from 'fs';
-import {
-  CONFIG
-} from './config';
+import {CONFIG} from './config';
 import {ExchangeLockMultiTx} from './exchangelock-multi-tx/core';
 import {TimeLockMultiTx} from './timelock-multi-tx/core';
-import {ExchangeLock, ExchangeLockArgs} from './types/ckb-exchange-lock';
-import {SerializeLock} from './schemas-types/ckb-exchange-lock-type';
+import {ExchangeLockArgs} from './types/ckb-exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
+import {ExchangeLockAddr} from './address';
 const program = new Command();
 program.version('0.0.1');
 
@@ -166,6 +164,18 @@ program
     await exportMoleculeTypes();
   });
 
+program.command('getAddress').action(() => {
+  const config = CONFIG;
+  const keyPair = new ECPair(config.rootPrivateKey);
+  const singlePubKey = keyPair.publicKey;
+  let multiPubKey = [];
+  for (let privateKey of config.accountPrivateKey) {
+    multiPubKey.push(new ECPair(privateKey).publicKey);
+  }
+  const addr = new ExchangeLockAddr(3, 1, singlePubKey, multiPubKey,0,CONFIG.testnetConfig);
+  console.log(addr.address.toCKBAddress());
+});
+
 program
   .command('deploy_tx <txType>')
   .description(
@@ -239,6 +249,8 @@ program
         .slice(0, 42),
       HashType.type
     );
+    const config =
+      options.env == CKBEnv.dev ? CONFIG.devConfig : CONFIG.testnetConfig;
     switch (txType) {
       case 'TimeLockSingleTx':
         fromOutPoint = new OutPoint(options.txHash, options.txOutputIndex);
@@ -250,7 +262,7 @@ program
             1,
             CONFIG.accountPrivateKey[0],
             multiPubKey,
-            options.env
+            config
           )
         ).send();
         console.log('txHash:', txHash);
@@ -266,7 +278,7 @@ program
             1,
             singlePubKey,
             CONFIG.accountPrivateKey,
-            options.env
+            config
           )
         ).send();
         console.log('txHash:', txHash);
@@ -281,7 +293,7 @@ program
             1,
             CONFIG.accountPrivateKey[0],
             multiPubKey,
-            options.env
+            config
           )
         ).send();
         console.log('txHash:', txHash);
@@ -296,7 +308,7 @@ program
             1,
             singlePubKey,
             CONFIG.accountPrivateKey,
-            options.env
+            config
           )
         ).send();
         console.log('txHash:', txHash);

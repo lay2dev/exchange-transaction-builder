@@ -4,6 +4,7 @@ import {
   Cell,
   RawTransaction,
   Reader,
+  CellDep,
 } from '@lay2/pw-core';
 import {CellDepType, CKBEnv, getCellDep} from '../helpers';
 import {TimeLock} from '../types/ckb-exchange-timelock';
@@ -16,7 +17,7 @@ export class TimeLockMultiTxBuilder extends Builder {
     private inputCell: Cell,
     private outputCell: Cell,
     private timeLock: TimeLock,
-    private env: CKBEnv
+    private cellDeps: CellDep[]
   ) {
     super();
   }
@@ -38,12 +39,7 @@ export class TimeLockMultiTxBuilder extends Builder {
       new RawTransaction(
         [this.inputCell],
         [this.outputCell],
-        [
-          getCellDep(this.env, CellDepType.ckb_exchange_timelock),
-          getCellDep(this.env, CellDepType.secp256k1_dep_cell),
-          getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
-          getCellDep(this.env,CellDepType.nft_type),
-        ]
+        this.cellDeps
       ),
       [calWitnessArgs]
     );
@@ -60,12 +56,8 @@ export class TimeLockMultiTxBuilder extends Builder {
       new RawTransaction(
         [this.inputCell],
         [this.outputCell],
-        [
-          getCellDep(this.env, CellDepType.ckb_exchange_timelock),
-          getCellDep(this.env, CellDepType.secp256k1_dep_cell),
-          getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
-          getCellDep(this.env,CellDepType.nft_type),
-        ]
+        this.cellDeps
+
       ),
       [witnessArgs]
     );

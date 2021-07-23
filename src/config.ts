@@ -1,4 +1,6 @@
-import { readFileSync } from "fs";
+import {CellDep, DepType, OutPoint} from '@lay2/pw-core';
+import {readFileSync} from 'fs';
+import {CellDepType} from './helpers';
 
 export class RunningConfig {
   constructor(
@@ -14,8 +16,54 @@ export class RunningConfig {
     public ckbExchangeLock: DepCellInfo,
     // the `exchange timelock` dep cell info.`ExchangeTimeLock` is like `ExchangeLock` but with `since check` feature.
     public ckbExchangeTimelock: DepCellInfo,
-    public nftType: DepCellInfo = new DepCellInfo("","","")
+    public nftType: DepCellInfo = new DepCellInfo('', '', '')
   ) {}
+  getCellDep(type: CellDepType): CellDep {
+    switch (type) {
+      case CellDepType.secp256k1_dep_cell:
+        return new CellDep(
+          DepType.depGroup,
+          new OutPoint(
+            CONFIG.devConfig.secp256k1DepCell.txHash,
+            CONFIG.devConfig.secp256k1DepCell.outputIndex
+          )
+        );
+      case CellDepType.secp256k1_lib_dep_cell:
+        return new CellDep(
+          DepType.code,
+          new OutPoint(
+            CONFIG.devConfig.secp256k1LibDepCell.txHash,
+            CONFIG.devConfig.secp256k1LibDepCell.outputIndex
+          )
+        );
+      case CellDepType.ckb_exchange_lock:
+        return new CellDep(
+          DepType.code,
+          new OutPoint(
+            CONFIG.devConfig.ckbExchangeLock.txHash,
+            CONFIG.devConfig.ckbExchangeLock.outputIndex
+          )
+        );
+      case CellDepType.ckb_exchange_timelock:
+        return new CellDep(
+          DepType.code,
+          new OutPoint(
+            CONFIG.devConfig.ckbExchangeTimelock.txHash,
+            CONFIG.devConfig.ckbExchangeTimelock.outputIndex
+          )
+        );
+      case CellDepType.nft_type:
+        return new CellDep(
+          DepType.code,
+          new OutPoint(
+            CONFIG.devConfig.nftType.txHash,
+            CONFIG.devConfig.nftType.outputIndex
+          )
+        );
+      default:
+        throw new Error('invalid cell dep type');
+    }
+  }
 }
 export class DepCellInfo {
   constructor(
@@ -41,10 +89,10 @@ export class Config {
     // Private keys for multiple signature
     public accountPrivateKey: string[]
   ) {}
-  static parseFromFile(path:string):Config{
-    const configStr = readFileSync(path,{encoding:"utf8"});
+  static parseFromFile(path: string): Config {
+    const configStr = readFileSync(path, {encoding: 'utf8'});
     return JSON.parse(configStr);
   }
 }
 
-export const CONFIG = Config.parseFromFile("./config.json");
+export const CONFIG = Config.parseFromFile('./config.json');

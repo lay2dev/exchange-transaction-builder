@@ -14,7 +14,8 @@ import {TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLockSingleSigner} from '../signer/exchange-lock-signer';
 import {CONFIG} from '../config';
-import {CKBEnv} from '../helpers';
+import {CellDepType, CKBEnv} from '../helpers';
+import { RunningConfig } from '..';
 
 /**
  * The object that combine `ExchangeLockSingleTx`'s builder, signer and deployment.
@@ -44,11 +45,9 @@ export class ExchangeLockSingleTx {
     requestFirstN: number,
     singlePrivateKey: string,
     multiPubKey: Array<string>,
-    env: CKBEnv = CKBEnv.testnet
+    config: RunningConfig
   ): Promise<ExchangeLockSingleTx> {
-    const nodeUrl =
-      env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
-    const rpc = new RPC(nodeUrl);
+    const rpc = new RPC(config.ckb_url);
 
     let multiPubKeyHash = [];
     for (let pubkey of multiPubKey) {
@@ -82,9 +81,7 @@ export class ExchangeLockSingleTx {
     );
 
     let timeLockScript = new Script(
-      env == CKBEnv.dev
-        ? CONFIG.devConfig.ckbExchangeTimelock.typeHash
-        : CONFIG.testnetConfig.ckbExchangeTimelock.typeHash,
+      config.ckbExchangeLock.typeHash,
       new Blake2bHasher()
         .hash(
           new TimeLockArgs(
@@ -115,7 +112,12 @@ export class ExchangeLockSingleTx {
       inputCell,
       outputCell,
       exchangeLock,
-      env
+      [
+        config.getCellDep(CellDepType.ckb_exchange_lock),
+        config.getCellDep(CellDepType.secp256k1_dep_cell),
+        config.getCellDep(CellDepType.secp256k1_lib_dep_cell),
+        config.getCellDep(CellDepType.nft_type),
+      ]
     );
 
     return new ExchangeLockSingleTx(rpc, builder, signer);

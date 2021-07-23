@@ -11,8 +11,8 @@ import {TimeLockSingleTxBuilder} from './builder';
 import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockSingleSigner} from '../signer/time-lock-signer';
-import {CONFIG, } from '../config';
-import { CKBEnv } from '../helpers';
+import {RunningConfig} from '..';
+import { CellDepType } from '../helpers';
 
 /**
  * The object that combine `ExchangeTimeLockSingleTx`'s builder, signer and deployment.
@@ -28,8 +28,8 @@ export class TimeLockSingleTx {
    * create ExchangeTimeLockSingleTx
    * @param fromOutPoint The `outpoint` where `NFT` from.
    * @param userLockScript The `lock script` of user address,where nft finally to,uses single signature
-   * @param threshold The `threshole` from `ExchagneTimeLock`'s multiple signature 
-   * @param requestFirstN The first nth public keys must match,which from `ExchagneTimeLock`'s multiple signature 
+   * @param threshold The `threshole` from `ExchagneTimeLock`'s multiple signature
+   * @param requestFirstN The first nth public keys must match,which from `ExchagneTimeLock`'s multiple signature
    * @param singlePrivateKey The private key for `ExchagneTimeLock`'s single signature
    * @param multiPubKey The public keys for `ExchagneTimeLock`'s multiple signature
    * @param env The running enviment.One of `dev`,`testnet`
@@ -37,16 +37,14 @@ export class TimeLockSingleTx {
    */
   static async create(
     fromOutPoint: OutPoint,
-    userLockScript:Script,
+    userLockScript: Script,
     threshold: number,
     requestFirstN: number,
     singlePrivateKey: string,
     multiPubKey: Array<string>,
-    env: CKBEnv = CKBEnv.testnet
-  ):Promise<TimeLockSingleTx> {
-    const nodeUrl =
-      env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
-    const rpc = new RPC(nodeUrl);
+    config: RunningConfig
+  ): Promise<TimeLockSingleTx> {
+    const rpc = new RPC(config.ckb_url);
 
     let multiPubKeyHash = [];
     for (let pubKey of multiPubKey) {
@@ -68,9 +66,7 @@ export class TimeLockSingleTx {
         .slice(0, 20)
     );
 
-    const userLockScriptHash = new Reader(
-      userLockScript.toHash().slice(0, 42)
-    );
+    const userLockScriptHash = new Reader(userLockScript.toHash().slice(0, 42));
 
     const timeLock = new TimeLock(
       0,
@@ -99,7 +95,12 @@ export class TimeLockSingleTx {
       inputCell,
       outputCell,
       timeLock,
-      env
+      [
+        config.getCellDep(CellDepType.ckb_exchange_timelock),
+        config.getCellDep(CellDepType.secp256k1_dep_cell),
+        config.getCellDep(CellDepType.secp256k1_lib_dep_cell),
+        config.getCellDep(CellDepType.nft_type),
+      ]
     );
 
     return new TimeLockSingleTx(rpc, builder, signer);

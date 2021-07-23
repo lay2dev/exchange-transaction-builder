@@ -1,5 +1,5 @@
 import {Address, Blake2bHasher, HashType, Reader, Script} from '@lay2/pw-core';
-import {CONFIG} from '../config';
+import { RunningConfig } from '..';
 import {TimeLockArgs} from '../types/ckb-exchange-timelock';
 
 /**
@@ -21,6 +21,7 @@ export class ExchangeTimeLockAddr {
     singlePubKey: string,
     multiPubKey: Array<string>,
     outputHash:string,
+    config:RunningConfig,
   ) {
     let multiPubKeyHash = [];
     for (let pubKey of multiPubKey) {
@@ -41,9 +42,9 @@ export class ExchangeTimeLockAddr {
         .slice(0, 20)
     );
 
-    const exchangeLockCodeHash = CONFIG.devConfig.ckbExchangeLock.typeHash;
+    const exchangeLockCodeHash = config.ckbExchangeLock.typeHash;
 
-    const exchangeLockArgs = new TimeLockArgs(
+    const timeLockArgs = new TimeLockArgs(
       threshold,
       requestFirstN,
       multiPubKeyHash,
@@ -53,7 +54,7 @@ export class ExchangeTimeLockAddr {
 
     let exchangeLockScript = new Script(
       exchangeLockCodeHash,
-      exchangeLockArgs.serialize().serializeJson(),
+      new Blake2bHasher().hash(timeLockArgs.serialize()).serializeJson().slice(0,42),
       HashType.type
     );
     let addr = Address.fromLockScript(exchangeLockScript);

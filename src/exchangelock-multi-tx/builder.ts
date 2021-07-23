@@ -4,9 +4,9 @@ import {
   Cell,
   RawTransaction,
   Reader,
+  CellDep,
 } from '@lay2/pw-core';
-import {CellDepType, CKBEnv, getCellDep} from '../helpers';
-import { ExchangeLock } from '../types/ckb-exchange-lock';
+import {ExchangeLock} from '../types/ckb-exchange-lock';
 
 /**
  * Builder for `ExchangeLockMultiTx`
@@ -16,7 +16,7 @@ export class ExchangeLockMultiTxBuilder extends Builder {
     private inputCell: Cell,
     private outputCell: Cell,
     protected exchangeLock: ExchangeLock,
-    private env: CKBEnv
+    private cellDeps: CellDep[]
   ) {
     super();
   }
@@ -25,7 +25,7 @@ export class ExchangeLockMultiTxBuilder extends Builder {
    * @returns ExchangeLockMultiTx
    */
   async build(): Promise<Transaction> {
-    for (let _i in this.exchangeLock.args.multi_pubkey){
+    for (let _i in this.exchangeLock.args.multi_pubkey) {
       this.exchangeLock.signature.push(new Reader('0x' + '0'.repeat(130)));
     }
     const calWitnessArgs = {
@@ -34,16 +34,7 @@ export class ExchangeLockMultiTxBuilder extends Builder {
       output_type: '',
     };
     const calTx = new Transaction(
-      new RawTransaction(
-        [this.inputCell],
-        [this.outputCell],
-        [
-          getCellDep(this.env, CellDepType.ckb_exchange_lock),
-          getCellDep(this.env, CellDepType.secp256k1_dep_cell),
-          getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
-          getCellDep(this.env,CellDepType.nft_type),
-        ]
-      ),
+      new RawTransaction([this.inputCell], [this.outputCell], this.cellDeps),
       [calWitnessArgs]
     );
 
@@ -56,16 +47,7 @@ export class ExchangeLockMultiTxBuilder extends Builder {
       output_type: '',
     };
     const tx = new Transaction(
-      new RawTransaction(
-        [this.inputCell],
-        [this.outputCell],
-        [
-          getCellDep(this.env, CellDepType.ckb_exchange_lock),
-          getCellDep(this.env, CellDepType.secp256k1_dep_cell),
-          getCellDep(this.env, CellDepType.secp256k1_lib_dep_cell),
-          getCellDep(this.env,CellDepType.nft_type),
-        ]
-      ),
+      new RawTransaction([this.inputCell], [this.outputCell], this.cellDeps),
       [witnessArgs]
     );
     tx.raw.outputs[0].capacity = tx.raw.outputs[0].capacity.sub(fee);
