@@ -47,7 +47,7 @@ export class TimeLockMultiTx {
     multiPrivateKey: Array<string>,
     config: RunningConfig
   ): Promise<TimeLockMultiTx> {
-    const rpc = new RPC(config.ckb_url);
+    const rpc = new RPC(config.ckbUrl);
 
     let multiKeyPair = [];
     let multiPubKeyHash = [];

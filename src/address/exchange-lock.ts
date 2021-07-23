@@ -1,5 +1,5 @@
 import {Address, Blake2bHasher, HashType, Reader, Script} from '@lay2/pw-core';
-import {ExchangeLock, RunningConfig, SignFlag} from '..';
+import {RunningConfig} from '..';
 import {ExchangeLockArgs} from '../types/ckb-exchange-lock';
 
 /**
@@ -19,7 +19,6 @@ export class ExchangeLockAddr {
     requestFirstN: number,
     singlePubKey: string,
     multiPubKey: Array<string>,
-    signFlag: SignFlag,
     config: RunningConfig
   ) {
     let multiPubKeyHash = [];

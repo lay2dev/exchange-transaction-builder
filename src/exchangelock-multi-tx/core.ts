@@ -44,7 +44,7 @@ export class ExchangeLockMultiTx {
     multiPrivateKey: Array<string>,
     config: RunningConfig
   ): Promise<ExchangeLockMultiTx> {
-    const rpc = new RPC(config.ckb_url);
+    const rpc = new RPC(config.ckbUrl);
 
     let multiKeyPair = [];
     let multiPubKeyHash = [];

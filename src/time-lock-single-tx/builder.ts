@@ -36,12 +36,12 @@ export class TimeLockSingleTxBuilder extends Builder {
       new RawTransaction(
         [this.inputCell],
         [this.outputCell],
-        
+        this.cellDeps,
       ),
       [calWitnessArgs]
     );
     for (let i in calTx.raw.inputs) {
-      calTx.raw.inputs[i].since = '0x8000000000000064';
+      calTx.raw.inputs[i].since = '0xc00000000000003c';
     }
     const fee = Builder.calcFee(calTx, this.feeRate);
     
@@ -60,7 +60,7 @@ export class TimeLockSingleTxBuilder extends Builder {
       [witnessArgs]
     );
     for (let i in tx.raw.inputs) {
-      tx.raw.inputs[i].since = '0x8000000000000064';
+      tx.raw.inputs[i].since = '0xc00000000000003c';
     }
     tx.raw.outputs[0].capacity = tx.raw.outputs[0].capacity.sub(fee);
 

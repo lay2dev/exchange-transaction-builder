@@ -92,8 +92,8 @@ export async function transferAccount() {
   // init `RawProvider` with private key
   const privateKey = CONFIG.rootPrivateKey
   const provider = new RawProvider(privateKey);
-  const collector = new IndexerCollector(CONFIG.devConfig.indexer_url);
-  const pwcore = await new PWCore(CONFIG.devConfig.ckb_url).init(
+  const collector = new IndexerCollector(CONFIG.devConfig.indexerUrl);
+  const pwcore = await new PWCore(CONFIG.devConfig.ckbUrl).init(
     provider,
     collector,
     ChainID.ckb_dev,
@@ -140,7 +140,7 @@ export async function transferAccountForNFT(
   env: CKBEnv = CKBEnv.testnet
 ) {
   const nodeUrl =
-    env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
+    env == CKBEnv.dev ? CONFIG.devConfig.ckbUrl : CONFIG.testnetConfig.ckbUrl;
   const rpc = new RPC(nodeUrl);
 
   let multiKeyPair = [];
@@ -234,7 +234,7 @@ export async function getCellDataHash(
   env: CKBEnv
 ) {
   const nodeUrl =
-    env === CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
+    env === CKBEnv.dev ? CONFIG.devConfig.ckbUrl : CONFIG.testnetConfig.ckbUrl;
   const rpc = new RPC(nodeUrl);
   const cell = await Cell.loadFromBlockchain(rpc, new OutPoint(txHash, index));
 

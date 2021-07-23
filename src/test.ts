@@ -1,15 +1,11 @@
 import {
-  Amount,
   Blake2bHasher,
-  ChainID,
   HashType,
   OutPoint,
   Reader,
-  RPC,
   Script,
-  WitnessArgs,
 } from '@lay2/pw-core';
-import Deploy, {devChainConfig} from './deploy/deploy';
+import Deploy from './deploy/deploy';
 import {
   CKBEnv,
   exportMoleculeTypes,
@@ -172,7 +168,7 @@ program.command('getAddress').action(() => {
   for (let privateKey of config.accountPrivateKey) {
     multiPubKey.push(new ECPair(privateKey).publicKey);
   }
-  const addr = new ExchangeLockAddr(3, 1, singlePubKey, multiPubKey,0,CONFIG.testnetConfig);
+  const addr = new ExchangeLockAddr(3, 1, singlePubKey, multiPubKey,CONFIG.testnetConfig);
   console.log(addr.address.toCKBAddress());
 });
 

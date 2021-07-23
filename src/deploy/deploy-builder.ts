@@ -22,8 +22,7 @@ import  {
   RPC,
 } from '@lay2/pw-core';
 import {CONFIG} from '../config';
-import { CKBEnv } from '../helpers';
-import { devChainConfig } from './deploy';
+import { CellDepType, CKBEnv } from '../helpers';
 
 export class DeployBuilderOption implements BuilderOption {
   constructor(
@@ -46,9 +45,9 @@ export default class DeployBuilder extends Builder {
     protected options: DeployBuilderOption = {}
   ) {
     super(options.feeRate, options.collector, options.witnessArgs);
-    const nodeUrl = this.env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
+    const nodeUrl = this.env == CKBEnv.dev ? CONFIG.devConfig.ckbUrl : CONFIG.testnetConfig.ckbUrl;
     this.rpc = new RPC(nodeUrl);
-    // this._pwCore = new PWCore(CKB_URL);
+    // this._pwCore = new PWCore(ckbUrl);
   }
 
   private newOutputCell(): Cell {
@@ -150,7 +149,7 @@ export default class DeployBuilder extends Builder {
       new RawTransaction(
         inputCells,
         [outputCell, changeCell],
-        [devChainConfig.defaultLock.cellDep]
+        [CONFIG.testnetConfig.getCellDep(CellDepType.secp256k1_dep_cell)]
       ),
       [Builder.WITNESS_ARGS.RawSecp256k1]
     );

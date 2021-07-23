@@ -123,8 +123,8 @@ export default class Deploy {
     const fromAddrStr = privateKeyToAddress(privateKey,{prefix:addressPrefix});
     this.fromAddr = new Address(fromAddrStr,AddressType.ckb,);
     this.toAddr = this.fromAddr;
-    const nodeUrl = this.ckbEnv === CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
-    const indexUrl =  this.ckbEnv === CKBEnv.dev ? CONFIG.devConfig.indexer_url : CONFIG.testnetConfig.indexer_url;
+    const nodeUrl = this.ckbEnv === CKBEnv.dev ? CONFIG.devConfig.ckbUrl : CONFIG.testnetConfig.ckbUrl;
+    const indexUrl =  this.ckbEnv === CKBEnv.dev ? CONFIG.devConfig.indexerUrl : CONFIG.testnetConfig.indexerUrl;
     this.collector = new IndexerCollector(indexUrl);
     this.rpc = new RPC(nodeUrl);
     this.signer = new DefaultSigner(new Blake2bHasher(),privateKey,this.fromAddr.toLockScript().toHash());

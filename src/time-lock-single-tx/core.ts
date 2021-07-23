@@ -44,7 +44,7 @@ export class TimeLockSingleTx {
     multiPubKey: Array<string>,
     config: RunningConfig
   ): Promise<TimeLockSingleTx> {
-    const rpc = new RPC(config.ckb_url);
+    const rpc = new RPC(config.ckbUrl);
 
     let multiPubKeyHash = [];
     for (let pubKey of multiPubKey) {

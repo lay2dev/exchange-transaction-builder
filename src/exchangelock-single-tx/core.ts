@@ -47,7 +47,7 @@ export class ExchangeLockSingleTx {
     multiPubKey: Array<string>,
     config: RunningConfig
   ): Promise<ExchangeLockSingleTx> {
-    const rpc = new RPC(config.ckb_url);
+    const rpc = new RPC(config.ckbUrl);
 
     let multiPubKeyHash = [];
     for (let pubkey of multiPubKey) {
@@ -81,7 +81,7 @@ export class ExchangeLockSingleTx {
     );
 
     let timeLockScript = new Script(
-      config.ckbExchangeLock.typeHash,
+      config.ckbExchangeTimelock.typeHash,
       new Blake2bHasher()
         .hash(
           new TimeLockArgs(
