@@ -2,8 +2,8 @@ import { Hasher, Message, Signer } from "@lay2/pw-core";
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 
 export class DefaultSigner extends Signer {
-    private keyPair:ECPair;
-    private fromLockHash:string;
+    public keyPair:ECPair;
+    public fromLockHash:string;
     constructor(hash:Hasher,privateKey:string,fromLockHash:string){
         super(hash);
         this.keyPair = new ECPair(privateKey);

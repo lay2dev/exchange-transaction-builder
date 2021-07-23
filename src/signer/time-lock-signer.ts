@@ -12,11 +12,11 @@ import {TimeLock} from '../types/ckb-exchange-timelock';
  * The signer for `ExchangeTimeLock`'s single signature
  */
 export class TimeLockSingleSigner extends Signer {
-  private singleKeyPair: ECPair;
+  public singleKeyPair: ECPair;
   constructor(
-    private fromLockHash: string,
+    public fromLockHash: string,
     singlePrivateKey: string,
-    private timeLock: TimeLock,
+    public timeLock: TimeLock,
     hasher: Hasher
   ) {
     super(hasher);

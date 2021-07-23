@@ -12,11 +12,11 @@ import {ExchangeLock} from '../types/ckb-exchange-lock';
  * The signer for `ExchangeLock`'s single signature
  */
 export class ExchangeLockSingleSigner extends Signer {
-  private singleKeyPair: ECPair;
+  public singleKeyPair: ECPair;
   constructor(
-    private fromLockHash: string,
+    public fromLockHash: string,
     singlePrivateKey: string,
-    private exchangeLock: ExchangeLock,
+    public exchangeLock: ExchangeLock,
     hasher: Hasher
   ) {
     super(hasher);

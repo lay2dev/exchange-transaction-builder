@@ -13,10 +13,10 @@ import {ExchangeLock} from '../types/ckb-exchange-lock';
  */
 export class ExchangeLockMultiTxBuilder extends Builder {
   constructor(
-    private inputCell: Cell,
-    private outputCell: Cell,
-    protected exchangeLock: ExchangeLock,
-    private cellDeps: CellDep[]
+    public inputCell: Cell,
+    public outputCell: Cell,
+    public exchangeLock: ExchangeLock,
+    public cellDeps: CellDep[]
   ) {
     super();
   }

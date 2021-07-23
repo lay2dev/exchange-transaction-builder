@@ -20,9 +20,9 @@ import {RunningConfig} from '..';
  */
 export class TimeLockMultiTx {
   constructor(
-    private _rpc: RPC,
-    private builder: TimeLockMultiTxBuilder,
-    private signer: TimeLockMultiSigner
+    public _rpc: RPC,
+    public builder: TimeLockMultiTxBuilder,
+    public signer: TimeLockMultiSigner
   ) {}
 
   /**

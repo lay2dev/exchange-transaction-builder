@@ -6,7 +6,7 @@ import {ExchangeLockArgs} from '../types/ckb-exchange-lock';
  * Address whose lock script is `ExchangeLock`
  */
 export class ExchangeLockAddr {
-  address: Address;
+  public address: Address;
   /**
    *
    * @param threshold

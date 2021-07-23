@@ -13,10 +13,10 @@ import { TimeLock } from '../types/ckb-exchange-timelock';
  */
 export class TimeLockSingleTxBuilder extends Builder {
   constructor(
-    private inputCell: Cell,
-    private outputCell: Cell,
-    private timeLock: TimeLock,
-    private cellDeps:CellDep[],
+    public inputCell: Cell,
+    public outputCell: Cell,
+    public timeLock: TimeLock,
+    public cellDeps:CellDep[],
   ) {
     super();
   }

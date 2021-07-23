@@ -6,7 +6,7 @@ import {TimeLockArgs} from '../types/ckb-exchange-timelock';
  * Address whose lock script is `ExchangeLock`
  */
 export class ExchangeTimeLockAddr {
-  address: Address;
+  public address: Address;
   /**
    * 
    * @param threshold 

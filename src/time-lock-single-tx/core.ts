@@ -19,9 +19,9 @@ import { CellDepType } from '../helpers';
  */
 export class TimeLockSingleTx {
   constructor(
-    private readonly _rpc: RPC,
-    private builder: TimeLockSingleTxBuilder,
-    private signer: TimeLockSingleSigner
+    public _rpc: RPC,
+    public builder: TimeLockSingleTxBuilder,
+    public signer: TimeLockSingleSigner
   ) {}
 
   /**

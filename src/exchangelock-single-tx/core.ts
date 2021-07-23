@@ -22,9 +22,9 @@ import { RunningConfig } from '..';
  */
 export class ExchangeLockSingleTx {
   constructor(
-    private readonly _rpc: RPC,
-    private builder: ExchangeLockSingleTxBuilder,
-    private signer: ExchangeLockSingleSigner
+    public _rpc: RPC,
+    public builder: ExchangeLockSingleTxBuilder,
+    public signer: ExchangeLockSingleSigner
   ) {}
   
   /**

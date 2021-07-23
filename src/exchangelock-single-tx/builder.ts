@@ -14,10 +14,10 @@ import { ExchangeLock } from '../types/ckb-exchange-lock';
  */
 export class ExchangeLockSingleTxBuilder extends Builder {
   constructor(
-    private inputCell: Cell,
-    private outputCell: Cell,
-    private exchangeLock: ExchangeLock,
-    private cellDeps: CellDep[]
+    public inputCell: Cell,
+    public outputCell: Cell,
+    public exchangeLock: ExchangeLock,
+    public cellDeps: CellDep[]
     ) {
     super();
   }

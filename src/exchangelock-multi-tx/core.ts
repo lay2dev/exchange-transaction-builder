@@ -19,9 +19,9 @@ import {CellDepType, CKBEnv, getCellDep} from '../helpers';
  */
 export class ExchangeLockMultiTx {
   constructor(
-    private _rpc: RPC,
-    private builder: ExchangeLockMultiTxBuilder,
-    private signer: ExchangeLockMultiSigner
+    public _rpc: RPC,
+    public builder: ExchangeLockMultiTxBuilder,
+    public signer: ExchangeLockMultiSigner
   ) {}
 
   /**
