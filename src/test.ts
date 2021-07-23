@@ -23,10 +23,7 @@ import {TimeLockSingleTx} from './time-lock-single-tx/core';
 import {Command} from 'commander';
 import {readFileSync} from 'fs';
 import {
-  ACCOUNT_PRIVATE_KEY,
-  DEV_CONFIG,
-  ROOT_PRIVATE_KEY,
-  TESTNET_CONFIG,
+  CONFIG
 } from './config';
 import {ExchangeLockMultiTx} from './exchangelock-multi-tx/core';
 import {TimeLockMultiTx} from './timelock-multi-tx/core';
@@ -53,7 +50,7 @@ program
   )
   .action(async (binaryFilePath, options) => {
     let deploy = await new Deploy(
-      ROOT_PRIVATE_KEY,
+      CONFIG.rootPrivateKey,
       binaryFilePath,
       options.env
     ).init(options.txHash, options.txOutputIndex);
@@ -121,8 +118,8 @@ program
       fromOutPoint,
       3,
       1,
-      ROOT_PRIVATE_KEY,
-      ACCOUNT_PRIVATE_KEY,
+      CONFIG.rootPrivateKey,
+      CONFIG.accountPrivateKey,
       options.env
     );
   });
@@ -133,7 +130,7 @@ program
 
   .action(async () => {
     let multiPubKeyHash = [];
-    for (let privateKey of ACCOUNT_PRIVATE_KEY) {
+    for (let privateKey of CONFIG.accountPrivateKey) {
       let keyPair = new ECPair(privateKey);
       multiPubKeyHash.push(
         new Reader(
@@ -151,7 +148,7 @@ program
           1,
           new Reader(
             new Blake2bHasher()
-              .hash(new ECPair(ROOT_PRIVATE_KEY).publicKey)
+              .hash(new ECPair(CONFIG.rootPrivateKey).publicKey)
               .toArrayBuffer()
               .slice(0, 20)
           ),
@@ -191,11 +188,11 @@ program
     let fromOutPoint;
     const userLockScript = new Script(
       options.env == CKBEnv.dev
-        ? DEV_CONFIG.secp256k1_dep_cell.typeHash
-        : TESTNET_CONFIG.secp256k1_dep_cell.typeHash,
+        ? CONFIG.devConfig.secp256k1DepCell.typeHash
+        : CONFIG.testnetConfig.secp256k1DepCell.typeHash,
       new Reader(
         new Blake2bHasher()
-          .hash(new Reader(new ECPair(ROOT_PRIVATE_KEY).publicKey))
+          .hash(new Reader(new ECPair(CONFIG.rootPrivateKey).publicKey))
           .toArrayBuffer()
           .slice(0, 20)
       ).serializeJson(),
@@ -204,7 +201,7 @@ program
 
     let multiPubKey = [];
     let multiPubKeyHash = [];
-    for (let privateKey of ACCOUNT_PRIVATE_KEY) {
+    for (let privateKey of CONFIG.accountPrivateKey) {
       let keyPair = new ECPair(privateKey);
       multiPubKey.push(keyPair.publicKey);
       multiPubKeyHash.push(
@@ -217,7 +214,7 @@ program
       );
     }
 
-    const singlePubKey = new ECPair(ROOT_PRIVATE_KEY).publicKey;
+    const singlePubKey = new ECPair(CONFIG.rootPrivateKey).publicKey;
     const singlePubKeyHash = new Reader(
       new Blake2bHasher()
         .hash(new Reader(singlePubKey))
@@ -227,8 +224,8 @@ program
 
     const adminLockScript = new Script(
       options.env == CKBEnv.dev
-        ? DEV_CONFIG.ckb_exchange_lock.typeHash
-        : TESTNET_CONFIG.ckb_exchange_lock.typeHash,
+        ? CONFIG.devConfig.ckbExchangeLock.typeHash
+        : CONFIG.testnetConfig.ckbExchangeLock.typeHash,
       new Blake2bHasher()
         .hash(
           new ExchangeLockArgs(
@@ -251,7 +248,7 @@ program
             userLockScript,
             3,
             1,
-            ACCOUNT_PRIVATE_KEY[0],
+            CONFIG.accountPrivateKey[0],
             multiPubKey,
             options.env
           )
@@ -268,7 +265,7 @@ program
             3,
             1,
             singlePubKey,
-            ACCOUNT_PRIVATE_KEY,
+            CONFIG.accountPrivateKey,
             options.env
           )
         ).send();
@@ -282,7 +279,7 @@ program
             userLockScript,
             3,
             1,
-            ACCOUNT_PRIVATE_KEY[0],
+            CONFIG.accountPrivateKey[0],
             multiPubKey,
             options.env
           )
@@ -298,7 +295,7 @@ program
             3,
             1,
             singlePubKey,
-            ACCOUNT_PRIVATE_KEY,
+            CONFIG.accountPrivateKey,
             options.env
           )
         ).send();

@@ -23,10 +23,7 @@ import PWCore, {
 import {exec} from 'child_process';
 import {readdir, readFileSync} from 'fs';
 import {
-  ACCOUNT_PRIVATE_KEY,
-  DEV_CONFIG,
-  ROOT_PRIVATE_KEY,
-  TESTNET_CONFIG,
+  CONFIG,
 } from './config';
 import {devChainConfig} from './deploy/deploy';
 import {ExchangeLockAddr} from './exchange-lock';
@@ -93,10 +90,10 @@ export function exportMoleculeTypes() {
 
 export async function transferAccount() {
   // init `RawProvider` with private key
-  const privateKey = ACCOUNT_PRIVATE_KEY[0];
+  const privateKey = CONFIG.rootPrivateKey
   const provider = new RawProvider(privateKey);
-  const collector = new IndexerCollector(DEV_CONFIG.indexer_url);
-  const pwcore = await new PWCore(DEV_CONFIG.ckb_url).init(
+  const collector = new IndexerCollector(CONFIG.devConfig.indexer_url);
+  const pwcore = await new PWCore(CONFIG.devConfig.ckb_url).init(
     provider,
     collector,
     ChainID.ckb_dev,
@@ -116,8 +113,8 @@ export async function transferAccount() {
   const exchangeLockAddr = new ExchangeLockAddr(
     3,
     1,
-    ACCOUNT_PRIVATE_KEY[0],
-    ACCOUNT_PRIVATE_KEY
+    CONFIG.accountPrivateKey[0],
+    CONFIG.accountPrivateKey
   );
   const toAddr = exchangeLockAddr.address;
 
@@ -143,7 +140,7 @@ export async function transferAccountForNFT(
   env: CKBEnv = CKBEnv.testnet
 ) {
   const nodeUrl =
-    env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
   const rpc = new RPC(nodeUrl);
 
   let multiKeyPair = [];
@@ -185,7 +182,7 @@ export async function transferAccountForNFT(
     .serializeJson()
     .slice(0, 42);
 
-  const lockTypeHash = env == CKBEnv.dev ? DEV_CONFIG.ckb_exchange_lock.typeHash : TESTNET_CONFIG.ckb_exchange_lock.typeHash;
+  const lockTypeHash = env == CKBEnv.dev ? CONFIG.devConfig.ckbExchangeLock.typeHash : CONFIG.testnetConfig.ckbExchangeLock.typeHash;
   let exchangeLockScript = new Script(
     lockTypeHash,
     exchangeLockArgs,
@@ -197,7 +194,7 @@ export async function transferAccountForNFT(
   outputCell.lock = exchangeLockScript;
   const signer = new DefaultSigner(
     new Blake2bHasher(),
-    ROOT_PRIVATE_KEY,
+    CONFIG.rootPrivateKey,
     inputCell.lock.toHash()
   );
 
@@ -237,7 +234,7 @@ export async function getCellDataHash(
   env: CKBEnv
 ) {
   const nodeUrl =
-    env === CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    env === CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
   const rpc = new RPC(nodeUrl);
   const cell = await Cell.loadFromBlockchain(rpc, new OutPoint(txHash, index));
 
@@ -267,32 +264,32 @@ export function getCellDep(env: CKBEnv, type: CellDepType): CellDep {
           return new CellDep(
             DepType.depGroup,
             new OutPoint(
-              DEV_CONFIG.secp256k1_dep_cell.txHash,
-              DEV_CONFIG.secp256k1_dep_cell.outputIndex
+              CONFIG.devConfig.secp256k1DepCell.txHash,
+              CONFIG.devConfig.secp256k1DepCell.outputIndex
             )
           );
         case CellDepType.secp256k1_lib_dep_cell:
           return new CellDep(
             DepType.code,
             new OutPoint(
-              DEV_CONFIG.secp256k1_lib_dep_cell.txHash,
-              DEV_CONFIG.secp256k1_lib_dep_cell.outputIndex
+              CONFIG.devConfig.secp256k1LibDepCell.txHash,
+              CONFIG.devConfig.secp256k1LibDepCell.outputIndex
             )
           );
         case CellDepType.ckb_exchange_lock:
           return new CellDep(
             DepType.code,
             new OutPoint(
-              DEV_CONFIG.ckb_exchange_lock.txHash,
-              DEV_CONFIG.ckb_exchange_lock.outputIndex
+              CONFIG.devConfig.ckbExchangeLock.txHash,
+              CONFIG.devConfig.ckbExchangeLock.outputIndex
             )
           );
         case CellDepType.ckb_exchange_timelock:
           return new CellDep(
             DepType.code,
             new OutPoint(
-              DEV_CONFIG.ckb_exchange_timelock.txHash,
-              DEV_CONFIG.ckb_exchange_timelock.outputIndex
+              CONFIG.devConfig.ckbExchangeTimelock.txHash,
+              CONFIG.devConfig.ckbExchangeTimelock.outputIndex
             )
           );
         default:
@@ -304,40 +301,40 @@ export function getCellDep(env: CKBEnv, type: CellDepType): CellDep {
           return new CellDep(
             DepType.depGroup,
             new OutPoint(
-              TESTNET_CONFIG.secp256k1_dep_cell.txHash,
-              TESTNET_CONFIG.secp256k1_dep_cell.outputIndex
+              CONFIG.testnetConfig.secp256k1DepCell.txHash,
+              CONFIG.testnetConfig.secp256k1DepCell.outputIndex
             )
           );
         case CellDepType.secp256k1_lib_dep_cell:
           return new CellDep(
             DepType.code,
             new OutPoint(
-              TESTNET_CONFIG.secp256k1_lib_dep_cell.txHash,
-              TESTNET_CONFIG.secp256k1_lib_dep_cell.outputIndex
+              CONFIG.testnetConfig.secp256k1LibDepCell.txHash,
+              CONFIG.testnetConfig.secp256k1LibDepCell.outputIndex
             )
           );
         case CellDepType.ckb_exchange_lock:
           return new CellDep(
             DepType.code,
             new OutPoint(
-              TESTNET_CONFIG.ckb_exchange_lock.txHash,
-              TESTNET_CONFIG.ckb_exchange_lock.outputIndex
+              CONFIG.testnetConfig.ckbExchangeLock.txHash,
+              CONFIG.testnetConfig.ckbExchangeLock.outputIndex
             )
           );
         case CellDepType.ckb_exchange_timelock:
           return new CellDep(
             DepType.code,
             new OutPoint(
-              TESTNET_CONFIG.ckb_exchange_timelock.txHash,
-              TESTNET_CONFIG.ckb_exchange_timelock.outputIndex
+              CONFIG.testnetConfig.ckbExchangeTimelock.txHash,
+              CONFIG.testnetConfig.ckbExchangeTimelock.outputIndex
             )
           );
         case CellDepType.nft_type:
           return new CellDep(
             DepType.code,
             new OutPoint(
-              TESTNET_CONFIG.nft_type.txHash,
-              TESTNET_CONFIG.nft_type.outputIndex,
+              CONFIG.testnetConfig.nftType.txHash,
+              CONFIG.testnetConfig.nftType.outputIndex,
             )
           )
         default:

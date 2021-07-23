@@ -13,7 +13,7 @@ import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import {TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLockSingleSigner} from '../signer/exchange-lock-signer';
-import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
+import {CONFIG} from '../config';
 import {CKBEnv} from '../helpers';
 
 /**
@@ -47,7 +47,7 @@ export class ExchangeLockSingleTx {
     env: CKBEnv = CKBEnv.testnet
   ): Promise<ExchangeLockSingleTx> {
     const nodeUrl =
-      env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+      env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
     const rpc = new RPC(nodeUrl);
 
     let multiPubKeyHash = [];
@@ -83,8 +83,8 @@ export class ExchangeLockSingleTx {
 
     let timeLockScript = new Script(
       env == CKBEnv.dev
-        ? DEV_CONFIG.ckb_exchange_timelock.typeHash
-        : TESTNET_CONFIG.ckb_exchange_timelock.typeHash,
+        ? CONFIG.devConfig.ckbExchangeTimelock.typeHash
+        : CONFIG.testnetConfig.ckbExchangeTimelock.typeHash,
       new Blake2bHasher()
         .hash(
           new TimeLockArgs(

@@ -11,7 +11,7 @@ import {TimeLockMultiTxBuilder} from './builder';
 import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockMultiSigner} from '../signer/time-lock-signer';
-import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
+import {CONFIG} from '../config';
 import {CKBEnv} from '../helpers';
 
 /**
@@ -47,7 +47,7 @@ export class TimeLockMultiTx {
     env: CKBEnv = CKBEnv.testnet
   ): Promise<TimeLockMultiTx> {
     const nodeUrl =
-      env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+      env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
     const rpc = new RPC(nodeUrl);
 
     let multiKeyPair = [];

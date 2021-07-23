@@ -10,7 +10,7 @@ import {
 import {ExchangeLockMultiTxBuilder} from './builder';
 import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
-import {DEV_CONFIG, TESTNET_CONFIG} from '../config';
+import {CONFIG} from '../config';
 import {ExchangeLockMultiSigner} from '../signer/exchange-lock-signer';
 import {CKBEnv} from '../helpers';
 
@@ -45,7 +45,7 @@ export class ExchangeLockMultiTx {
     env: CKBEnv = CKBEnv.testnet
   ): Promise<ExchangeLockMultiTx> {
     const nodeUrl =
-      env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+      env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
     const rpc = new RPC(nodeUrl);
 
     let multiKeyPair = [];

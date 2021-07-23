@@ -19,7 +19,7 @@ import {CKBEnv,  } from '../helpers';
 import DeployBuilder, {DeployBuilderOption} from './deploy-builder';
 import {privateKeyToAddress,AddressOptions,AddressPrefix} from '@nervosnetwork/ckb-sdk-utils';
 import { DefaultSigner } from '../signer/default-signer';
-import {    DEV_CONFIG, TESTNET_CONFIG,   } from '../config';
+import {    CONFIG,   } from '../config';
 
 export const devChainConfig = {
   daoType: {
@@ -123,8 +123,8 @@ export default class Deploy {
     const fromAddrStr = privateKeyToAddress(privateKey,{prefix:addressPrefix});
     this.fromAddr = new Address(fromAddrStr,AddressType.ckb,);
     this.toAddr = this.fromAddr;
-    const nodeUrl = this.ckbEnv === CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
-    const indexUrl =  this.ckbEnv === CKBEnv.dev ? DEV_CONFIG.indexer_url : TESTNET_CONFIG.indexer_url;
+    const nodeUrl = this.ckbEnv === CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
+    const indexUrl =  this.ckbEnv === CKBEnv.dev ? CONFIG.devConfig.indexer_url : CONFIG.testnetConfig.indexer_url;
     this.collector = new IndexerCollector(indexUrl);
     this.rpc = new RPC(nodeUrl);
     this.signer = new DefaultSigner(new Blake2bHasher(),privateKey,this.fromAddr.toLockScript().toHash());

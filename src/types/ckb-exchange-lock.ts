@@ -1,4 +1,5 @@
 import {Reader} from '@lay2/pw-core';
+import { SignFlag } from '..';
 import {
   SerializeArgs,
   SerializeLock,
@@ -19,10 +20,13 @@ export class ExchangeLockArgs {
   }
 }
 
+
+
+
 export class ExchangeLock {
   constructor(
     public args: ExchangeLockArgs,
-    public sign_flag: number,
+    public sign_flag: SignFlag,
     public signature: Array<Reader>
   ) {}
   serialize() {

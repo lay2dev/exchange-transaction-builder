@@ -21,7 +21,7 @@ import  {
   OutPoint,
   RPC,
 } from '@lay2/pw-core';
-import {DEV_CONFIG, SYSTEM_TYPE_ID, TESTNET_CONFIG} from '../config';
+import {CONFIG} from '../config';
 import { CKBEnv } from '../helpers';
 import { devChainConfig } from './deploy';
 
@@ -46,7 +46,7 @@ export default class DeployBuilder extends Builder {
     protected options: DeployBuilderOption = {}
   ) {
     super(options.feeRate, options.collector, options.witnessArgs);
-    const nodeUrl = this.env == CKBEnv.dev ? DEV_CONFIG.ckb_url : TESTNET_CONFIG.ckb_url;
+    const nodeUrl = this.env == CKBEnv.dev ? CONFIG.devConfig.ckb_url : CONFIG.testnetConfig.ckb_url;
     this.rpc = new RPC(nodeUrl);
     // this._pwCore = new PWCore(CKB_URL);
   }
@@ -55,7 +55,7 @@ export default class DeployBuilder extends Builder {
     let outputCell = new Cell(
       new Amount('12600000000'),
       this.toAddr.toLockScript(),
-      new Script(SYSTEM_TYPE_ID, '0x' + '0'.repeat(64), HashType.type)
+      new Script(CONFIG.systemTypeId, '0x' + '0'.repeat(64), HashType.type)
     );
     if (this.options.data) {
       if (this.options.data.startsWith('0x')) {
@@ -139,7 +139,7 @@ export default class DeployBuilder extends Builder {
       blake.update(firstInput);
       blake.update(new Reader('0x0000000000000000'));
       const args = blake.digest().serializeJson();
-      outputCell.type = new Script(SYSTEM_TYPE_ID, args, HashType.type);
+      outputCell.type = new Script(CONFIG.systemTypeId, args, HashType.type);
     }
     const changeCell = new Cell(
       inputSum.sub(outputCell.capacity),

@@ -1,4 +1,5 @@
 import {Reader} from '@lay2/pw-core';
+import { SignFlag } from '.';
 import {SerializeArgs, SerializeLock} from '../schemas-types/ckb-exchange-timelock-type';
 
 export class TimeLockArgs {
@@ -16,7 +17,7 @@ export class TimeLockArgs {
 
 export class TimeLock {
   constructor(
-    public sign_flag: number,
+    public sign_flag: SignFlag,
     public args: TimeLockArgs,
     public signature: Array<Reader>
   ) {}
