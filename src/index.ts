@@ -4,7 +4,7 @@ export * from './time-lock-single-tx';
 export * from './timelock-multi-tx';
 export * from './signer';
 export * from './types';
-export {RunningConfig} from './config';
+export * from './config';
 export {Builder, Signer, Address} from '@lay2/pw-core';
 export * from './address';
 export {CKBEnv} from "./helpers";
