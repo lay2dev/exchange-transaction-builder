@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "version": "0.0.0",
+  "name": "exchange-transaction-builder",
+  "version": "0.0.1",
   "description": "",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -8,9 +8,10 @@
     "build/src"
   ],
   "license": "Apache-2.0",
+  "repository": "https://github.com/lay2dev/exchange-transaction-builder.git",
   "keywords": [],
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "ts-node src/test.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "gts lint",
     "clean": "gts clean",
