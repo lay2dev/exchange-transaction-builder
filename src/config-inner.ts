@@ -1,4 +1,4 @@
-import { Config, RunningConfig } from ".";
+import { Config, RunningConfig } from "./config";
 
 export const devConfig = {
   ckbUrl: 'http://127.0.0.1:8114',
