@@ -11,8 +11,7 @@ import {TimeLockMultiTxBuilder} from './builder';
 import {TimeLock, TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {TimeLockMultiSigner} from '../signer/time-lock-signer';
-import {CONFIG} from '../config';
-import {CellDepType, CKBEnv} from '../helpers';
+import {CellDepType, } from '../helpers';
 import {RunningConfig} from '..';
 
 /**

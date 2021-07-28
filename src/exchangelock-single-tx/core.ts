@@ -13,7 +13,6 @@ import {ExchangeLock, ExchangeLockArgs} from '../types/ckb-exchange-lock';
 import {TimeLockArgs} from '../types/ckb-exchange-timelock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLockSingleSigner} from '../signer/exchange-lock-signer';
-import {CONFIG} from '../config';
 import {CellDepType, CKBEnv} from '../helpers';
 import { RunningConfig } from '..';
 

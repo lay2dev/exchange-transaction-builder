@@ -1,8 +1,7 @@
 import {CellDep, DepType, OutPoint} from '@lay2/pw-core';
-import {readFileSync} from 'fs';
 import {CellDepType} from './helpers';
 
-export class RunningConfig {
+export class RunningConfig implements RunningConfigInner{
   constructor(
     // ckb node url
     public ckbUrl: string,
@@ -118,17 +117,6 @@ export class Config {
     public accountPrivateKey: string[]
   ) {}
 
-  static parseFromFile(path: string): Config {
-    const configStr = readFileSync(path, {encoding: 'utf8'});
-    const data:ConfigInnder = JSON.parse(configStr);
-    return new Config(
-      RunningConfig.from(data.devConfig),
-      RunningConfig.from(data.testnetConfig),
-      data.systemTypeId,
-      data.rootPrivateKey,
-      data.accountPrivateKey,
-    );
-  }
 }
 
 interface ConfigInnder{
@@ -139,4 +127,3 @@ interface ConfigInnder{
   accountPrivateKey:string[],
 }
 
-export const CONFIG = Config.parseFromFile('./config.json');

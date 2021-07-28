@@ -19,7 +19,7 @@ import {CKBEnv,  } from '../helpers';
 import DeployBuilder, {DeployBuilderOption} from './deploy-builder';
 import {privateKeyToAddress,AddressOptions,AddressPrefix} from '@nervosnetwork/ckb-sdk-utils';
 import { DefaultSigner } from '../signer/default-signer';
-import {    CONFIG,   } from '../config';
+import { CONFIG } from '../config-inner';
 
 export const devChainConfig = {
   daoType: {

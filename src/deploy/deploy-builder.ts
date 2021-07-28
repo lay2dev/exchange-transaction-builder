@@ -21,7 +21,7 @@ import  {
   OutPoint,
   RPC,
 } from '@lay2/pw-core';
-import {CONFIG} from '../config';
+import { CONFIG } from '../config-inner';
 import { CellDepType, CKBEnv } from '../helpers';
 
 export class DeployBuilderOption implements BuilderOption {

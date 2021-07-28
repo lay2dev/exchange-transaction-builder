@@ -18,12 +18,14 @@ import {TimeLockSingleTx} from './time-lock-single-tx/core';
 
 import {Command} from 'commander';
 import {readFileSync} from 'fs';
-import {CONFIG} from './config';
 import {ExchangeLockMultiTx} from './exchangelock-multi-tx/core';
 import {TimeLockMultiTx} from './timelock-multi-tx/core';
 import {ExchangeLockArgs} from './types/ckb-exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLockAddr} from './address';
+import { CONFIG } from './config-inner';
+
+
 const program = new Command();
 program.version('0.0.1');
 

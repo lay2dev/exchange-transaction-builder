@@ -22,14 +22,13 @@ import PWCore, {
 } from '@lay2/pw-core';
 import {exec} from 'child_process';
 import {readdir, readFileSync} from 'fs';
-import {
-  CONFIG,
-} from './config';
+
 import {devChainConfig} from './deploy/deploy';
 import {ExchangeLockAddr} from './exchange-lock';
 import ECPair from '@nervosnetwork/ckb-sdk-utils/lib/ecpair';
 import {ExchangeLock, ExchangeLockArgs} from './types/ckb-exchange-lock';
 import {DefaultSigner} from './signer/default-signer';
+import { CONFIG } from './config-inner';
 
 export const enum ROOT_ADDRESS {
   testnet = 'ckt1qyqr9t744z3dah6udvfczvzflcyfrwur0qpsxdz3g9',
