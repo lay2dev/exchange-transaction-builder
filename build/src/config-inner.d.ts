@@ -1,4 +1,4 @@
-import { Config } from ".";
+import { Config } from "./config";
 export declare const devConfig: {
     ckbUrl: string;
     indexerUrl: string;

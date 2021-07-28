@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONFIG = exports.accountPrivateKey = exports.rootPrivateKey = exports.systemTypeId = exports.testnetConfig = exports.devConfig = void 0;
-const _1 = require(".");
+const config_1 = require("./config");
 exports.devConfig = {
     ckbUrl: 'http://127.0.0.1:8114',
     indexerUrl: 'http://127.0.0.1:8116/indexer',
@@ -64,5 +64,5 @@ exports.accountPrivateKey = [
     '0x14ab5b73e0a9044c36decf08e21d20c9a728e8fd334d46d62981a29e6f901179',
     '0x1bc900157a06bb50aed257b6e87e2ec8ee024cd3dc0581eefa826a5b4f5a0c96',
 ];
-exports.CONFIG = new _1.Config(_1.RunningConfig.from(exports.devConfig), _1.RunningConfig.from(exports.testnetConfig), exports.systemTypeId, exports.rootPrivateKey, exports.accountPrivateKey);
+exports.CONFIG = new config_1.Config(config_1.RunningConfig.from(exports.devConfig), config_1.RunningConfig.from(exports.testnetConfig), exports.systemTypeId, exports.rootPrivateKey, exports.accountPrivateKey);
 //# sourceMappingURL=config-inner.js.map
